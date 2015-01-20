@@ -1,0 +1,35 @@
+---- LCD_R61505W_Init Matches (31 in 6 files) ----
+LCDConf.h (software\ucgui\config):#define LCD_INIT_CONTROLLER()     LCD_R61505W_Init();
+Lcdtemplate.txt (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):0005ac  f7fffffe          BL       LCD_R61505W_Init
+R61505W.c (software\ucgui\lcddriver):static void LCD_R61505W_InitHard(void);
+R61505W.c (software\ucgui\lcddriver):void LCD_R61505W_InitHard(void)
+R61505W.c (software\ucgui\lcddriver):*	函 数 名: LCD_R61505W_Init
+R61505W.c (software\ucgui\lcddriver):void LCD_R61505W_Init(void)
+R61505W.c (software\ucgui\lcddriver):	LCD_R61505W_InitHard();
+R61505W.h (software\ucgui\lcddriver):void    LCD_R61505W_Init(void);                             //LCD硬件初始化
+R61505w.txt (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):                  LCD_R61505W_InitHard PROC
+R61505w.txt (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):;;;259    void LCD_R61505W_InitHard(void)
+R61505w.txt (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):                  LCD_R61505W_Init PROC
+R61505w.txt (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):;;;339    void LCD_R61505W_Init(void)
+R61505w.txt (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):;;;357    	LCD_R61505W_InitHard();
+R61505w.txt (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):0002d2  f7fffffe          BL       LCD_R61505W_InitHard
+STM3210B-EVAL-OS-Probe.htm (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):<LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LCD_R61505W_Init
+STM3210B-EVAL-OS-Probe.htm (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):<BR><BR>[Called By]<UL><LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LCD_R61505W_Init
+STM3210B-EVAL-OS-Probe.htm (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):<LI><a href="#[198]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LCD_R61505W_InitHard
+STM3210B-EVAL-OS-Probe.htm (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):<BR>[Called By]<UL><LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LCD_R61505W_Init
+STM3210B-EVAL-OS-Probe.htm (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):<P><STRONG><a name="[19b]"></a>LCD_R61505W_Init</STRONG> (Thumb, 54 bytes, Stack size 8 bytes, r61505w.o(.text))
+STM3210B-EVAL-OS-Probe.htm (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):<BR><BR>[Stack]<UL><LI>Max Depth = 108<LI>Call Chain = LCD_R61505W_Init &rArr; LCD_R61505W_FSMCConfig &rArr; FSMC_NORSRAMInit
+STM3210B-EVAL-OS-Probe.htm (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):<LI><a href="#[198]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LCD_R61505W_InitHard
+STM3210B-EVAL-OS-Probe.htm (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):<BR><BR>[Stack]<UL><LI>Max Depth = 124<LI>Call Chain = LCD_Init &rArr; LCD_L0_Init &rArr; LCD_R61505W_Init &rArr; LCD_R61505W_FSMCConfig &rArr; FSMC_NORSRAMInit
+STM3210B-EVAL-OS-Probe.htm (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):<BR><BR>[Stack]<UL><LI>Max Depth = 116<LI>Call Chain = LCD_L0_Init &rArr; LCD_R61505W_Init &rArr; LCD_R61505W_FSMCConfig &rArr; FSMC_NORSRAMInit
+STM3210B-EVAL-OS-Probe.htm (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):<BR>[Calls]<UL><LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LCD_R61505W_Init
+STM3210B-EVAL-OS-Probe.htm (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):<LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LCD_R61505W_Init
+STM3210B-EVAL-OS-Probe.htm (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):<LI><a href="#[198]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LCD_R61505W_InitHard
+STM3210B-EVAL-OS-Probe.htm (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):<BR>[Called By]<UL><LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LCD_R61505W_Init
+STM3210B-EVAL-OS-Probe.htm (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):<BR>[Called By]<UL><LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LCD_R61505W_Init
+STM3210B-EVAL-OS-Probe.htm (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):<P><STRONG><a name="[198]"></a>LCD_R61505W_InitHard</STRONG> (Thumb, 444 bytes, Stack size 8 bytes, r61505w.o(.text))
+STM3210B-EVAL-OS-Probe.htm (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):<BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = LCD_R61505W_InitHard
+STM3210B-EVAL-OS-Probe.htm (software\evalboards\st\stm3210e-eval\rvmdk\os-probe\rvmdk):<BR>[Called By]<UL><LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LCD_R61505W_Init
+---- LCD_R61505W_Init Search Errors Encountered (1) ----
+The following 1 files could not be processed:
+E:\work\Project\智能终端\Code\Micrium\Software\EvalBoards\ST\STM3210E-EVAL\RVMDK\OS-Probe\JLinkLog.txt : File could not be opened.
