@@ -29,8 +29,6 @@ Purpose     : Core routines
   #include "WM.h"
 #endif
 
-#define GUI_TRIAL_VERSION 1
-
 /*********************************************************************
 *
 *       Static data
