@@ -103,11 +103,182 @@ void UKey_Init(void)
     GPIO_Init(GPIOG, &GPIO_InitStructure);                  //初始化GPIO      
 }
 
+#define DETECT_TIME 50 // ms
+u32 abs_time(u32 time_p, u32 time_n)
+{
+	return time_n>time_p?time_n-time_p:0xFFFFFFFF-time_p+time_n;
+}
+
 void UKey_EventLoop(void)
 {
     while (1)
     {
         /* HOME, PD3 */
+#if 1
+{
+	static vu32 time_pressed;
+	static vu8 pressed = 0;
+	static vu8 processed = 0;
+	
+	if(0 == GPIO_ReadInputDataBit(GPIOD, PIN_USER_KEY_HOME))//按键按下
+        {
+		if (!processed)
+		{
+	        	if (!pressed)
+	        	{
+				time_pressed = OSTime;
+				pressed = 1;
+	        	}
+			else
+			{
+				if (abs_time(time_pressed, OSTime)>DETECT_TIME)
+				{
+					UCore_PostMessage1(UCORE_MESSAGE_TYPE_KEY_HOME, 0, NULL);
+					processed = 1;
+				}
+					
+			}
+
+		}
+	}
+	else
+	{
+		pressed = 0;
+		processed = 0;
+	}
+}
+{
+	static vu32 time_pressed;
+	static vu8 pressed = 0;
+	static vu8 processed = 0;
+	
+	if(0 == GPIO_ReadInputDataBit(GPIOC, PIN_USER_KEY_OK))//按键按下
+        {
+		if (!processed)
+		{
+	        	if (!pressed)
+	        	{
+				time_pressed = OSTime;
+				pressed = 1;
+	        	}
+			else
+			{
+				if (abs_time(time_pressed, OSTime)>DETECT_TIME)
+				{
+					UCore_PostMessage1(UCORE_MESSAGE_TYPE_KEY_OK, 0, NULL);
+					processed = 1;
+				}
+					
+			}
+
+		}
+	}
+	else
+	{
+		pressed = 0;
+		processed = 0;
+	}
+}
+{
+	static vu32 time_pressed;
+	static vu8 pressed = 0;
+	static vu8 processed = 0;
+	
+	if(0 == GPIO_ReadInputDataBit(GPIOC, PIN_USER_KEY_UP))//按键按下
+        {
+		if (!processed)
+		{
+	        	if (!pressed)
+	        	{
+				time_pressed = OSTime;
+				pressed = 1;
+	        	}
+			else
+			{
+				if (abs_time(time_pressed, OSTime)>DETECT_TIME)
+				{
+					UCore_PostMessage1(UCORE_MESSAGE_TYPE_KEY_UP, 0, NULL);
+					processed = 1;
+				}
+					
+			}
+
+		}
+	}
+	else
+	{
+		pressed = 0;
+		processed = 0;
+	}
+}
+{
+	static vu32 time_pressed;
+	static vu8 pressed = 0;
+	static vu8 processed = 0;
+	
+	if(0 == GPIO_ReadInputDataBit(GPIOA, PIN_USER_KEY_DOWN))//按键按下
+        {
+		if (!processed)
+		{
+	        	if (!pressed)
+	        	{
+				time_pressed = OSTime;
+				pressed = 1;
+	        	}
+			else
+			{
+				if (abs_time(time_pressed, OSTime)>DETECT_TIME)
+				{
+					UCore_PostMessage1(UCORE_MESSAGE_TYPE_KEY_DOWN, 0, NULL);
+					processed = 1;
+				}
+					
+			}
+
+		}
+	}
+	else
+	{
+		pressed = 0;
+		processed = 0;
+	}
+}
+{
+	static vu32 time_pressed;
+	static vu8 pressed = 0;
+	static vu8 processed = 0;
+	
+	if(0 == GPIO_ReadInputDataBit(GPIOG, PIN_USER_KEY_RETURN))//按键按下
+        {
+		if (!processed)
+		{
+	        	if (!pressed)
+	        	{
+				time_pressed = OSTime;
+				pressed = 1;
+	        	}
+			else
+			{
+				if (abs_time(time_pressed, OSTime)>DETECT_TIME)
+				{
+					UCore_PostMessage1(UCORE_MESSAGE_TYPE_KEY_RETURN, 0, NULL);
+					processed = 1;
+				}
+					
+			}
+
+		}
+	}
+	else
+	{
+		pressed = 0;
+		processed = 0;
+	}
+}
+
+
+
+#else
         if(0 == GPIO_ReadInputDataBit(GPIOD, PIN_USER_KEY_HOME))//按键按下
         {
             /* 延迟去抖 */
@@ -161,8 +332,9 @@ void UKey_EventLoop(void)
                 UCore_PostMessage1(UCORE_MESSAGE_TYPE_KEY_RETURN, 0, NULL); 
             }
         }        
-                
-        OSTimeDlyHMSM(0, 0, 0, 200);
+#endif                
+        OSTimeDlyHMSM(0, 0, 0, 20);
+	
     }
 }
 
