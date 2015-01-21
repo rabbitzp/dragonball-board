@@ -12,44 +12,23 @@
 *              in any way. We appreciate your understanding and fairness.
 *
 ----------------------------------------------------------------------
-File        : GUIDEMO_Messagebox.c
-Purpose     : Messagebox samples
-----------------------------------------------------------------------
+File        : MainTask.c
+Purpose     : Init GUI & call of GUI-demo
+--------------------END-OF-HEADER-------------------------------------
 */
 
-#include <stddef.h>           /* needed for definition of NULL */
-#include "GUI.H"
-#include "GUIDEMO.H"
-#include "LCD_ConfDefaults.h"
-#include "WM.h"
-#include "Dialog.h"
+#include "GUI.h"
+#include "GUI_UserApp.h"
 
-#if GUI_WINSUPPORT
+void MainTask(void) {
+  GUI_Init();
 
-/*********************************************************************
-*
-*       GUIDEMO_Dialog
-*
-**********************************************************************
-*/
-
-void GUIDEMO_Messagebox(void) {
-  GUI_COLOR Color;
-  GUIDEMO_ShowIntro("Message boxes",
-                    "Message boxes" "\ncan easily be created");
-  Color = WM_SetDesktopColor(GUI_RED);
-  GUI_MessageBox("Message", "Text", 0);
-  GUI_Delay(1000);
-  GUI_MessageBox("2. Message", "Text", 0);
-  GUI_Delay(1000);
-  WM_SetDesktopColor(Color);
-  GUIDEMO_NotifyStartNext();
-
+  GUI_UserAppStart();
+  
+  while(1) {    
+    WM_ExecIdle();
+    
+    OSTimeDlyHMSM(0, 0, 0, 200);
+  }
 }
-
-#else
-
-void GUIDEMO_Messagebox(void) {}
-
-#endif /* GUI_SUPPORT_MEMDEV */
 	 	 			 		    	 				 	  			   	 	 	 	 	 	  	  	      	   		 	 	 		  		  	 		 	  	  			     			       	   	 			  		    	 	     	 				  	 					 	 			   	  	  			 				 		 	 	 			     			 

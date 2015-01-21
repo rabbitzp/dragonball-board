@@ -16,6 +16,7 @@
 #include <user_core.h>
 #include <user_task_hmc.h>
 
+
 #define	HMC5883L_Addr   0x3C
 
 #define SCL_H         GPIOB->BSRR = GPIO_Pin_6

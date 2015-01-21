@@ -45,11 +45,6 @@ typedef enum _tagUCMsgType
     /* 0 - 100 reserved*/
 
     /* 100- 200 system*/
-    UCORE_MESSAGE_TYPE_KEY_HOME     = 100,
-    UCORE_MESSAGE_TYPE_KEY_OK       = 101,
-    UCORE_MESSAGE_TYPE_KEY_UP       = 102,
-    UCORE_MESSAGE_TYPE_KEY_DOWN     = 103,
-    UCORE_MESSAGE_TYPE_KEY_RETURN   = 104,
     
 
     /* 200 - 1000 for user*/     

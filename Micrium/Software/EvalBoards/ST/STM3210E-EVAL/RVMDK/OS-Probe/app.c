@@ -234,34 +234,28 @@ int  main (void)
 
 static  void  App_TaskStart (void *p_arg)
 {
-    CPU_INT32U  i;
-    CPU_INT32U  j;
-
+    OS_CPU_SR cpu_sr=0;
 
     (void)p_arg;
-#if 1
+    
 	// jiaozi
-	    BSP_Init(); 						/* Initialize BSP functions.				*/
-#endif
+    BSP_Init(); 						/* Initialize BSP functions.				*/
 
     OS_CPU_SysTickInit();                                       /* Initialize the SysTick.                              */
-#if 1
+
     // jiaozi
 	BSP_Init_post();						    /* Initialize BSP functions.			    */
-#endif
 
 #if (OS_TASK_STAT_EN > 0)
     OSStatInit();                                               /* Determine CPU capacity.                              */
 #endif
-#if 1
-// jiaozi app input 150114
-{
-    OS_CPU_SR cpu_sr=0;
+
+    // jiaozi app input 150114
 
     OS_ENTER_CRITICAL();  //进入临界区，无法被中断打断
 
-    printf("\r\n start task\r\n");
-   #if 1
+    printf("Starting lcd....\r\n");
+    
     cpu_sr = OSTaskCreateExt((void (*)(void *)) App_TaskUserIF,
                              (void          * ) 0,
                              (OS_STK        * )&App_TaskUserIFStk[APP_TASK_USER_IF_STK_SIZE - 1],
@@ -271,47 +265,15 @@ static  void  App_TaskStart (void *p_arg)
                              (INT32U          ) APP_TASK_USER_IF_STK_SIZE,
                              (void          * ) 0,
                              (INT16U          )(OS_TASK_OPT_STK_CLR | OS_TASK_OPT_STK_CHK));
-   #endif
+
+    printf("Starting user core....\r\n");   
+   
     /* start user core */
     UCore_Start();
     
     OSTaskSuspend(Start_Task_PRIO);  //挂起起始任务
+    
     OS_EXIT_CRITICAL();  //退出临界区，可以被中断打断    
-}
-#else
-#if ((APP_PROBE_COM_EN == DEF_ENABLED) || \
-     (APP_OS_PROBE_EN  == DEF_ENABLED))
-    App_InitProbe();
-#endif
-
-    App_EventCreate();                                          /* Create application events.                           */
-    App_TaskCreate();                                           /* Create application tasks.                            */
-
-    while (DEF_TRUE) {                                          /* Task body, always written as an infinite loop.       */
-        for (j = 0; j < 4; j++) {
-            for (i = 1; i <= 4; i++) {
-                BSP_LED_On(i);
-                OSTimeDlyHMSM(0, 0, 0, 50);
-                BSP_LED_Off(i);
-                OSTimeDlyHMSM(0, 0, 0, 50);
-            }
-
-            for (i = 3; i >= 2; i--) {
-                BSP_LED_On(i);
-                OSTimeDlyHMSM(0, 0, 0, 50);
-                BSP_LED_Off(i);
-                OSTimeDlyHMSM(0, 0, 0, 50);
-            }
-        }
-
-        for (i = 0; i < 4; i++) {
-            BSP_LED_On(0);
-            OSTimeDlyHMSM(0, 0, 0, 200);
-            BSP_LED_Off(0);
-            OSTimeDlyHMSM(0, 0, 0, 200);
-        }
-    }
-#endif
 }
 
 

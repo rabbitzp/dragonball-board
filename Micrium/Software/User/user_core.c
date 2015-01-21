@@ -16,7 +16,6 @@
 #include <includes.h>
 #include <user_core.h>
 #include <user_task_key.h>
-#include <user_task_lcd.h>
 #include <user_task_hmc.h>
 
 #define DEFAULT_USER_TASK_PRIO              5  //优先级高
@@ -63,12 +62,6 @@ void UCore_TaskProc(void *p_arg)
         printf("Start user key task failed.\r\n");
     }
 
-    ucResult = ULCD_Start();
-    if (UCORE_ERR_SUCCESS != ucResult)
-    {
-        printf("Start user LCD task failed.\r\n");
-    }
-
     ucResult = UHMC_Start();
     if (UCORE_ERR_SUCCESS != ucResult)
     {
@@ -101,17 +94,7 @@ void UCore_EventLoop(void)
         if ((OS_NO_ERR == err) && (NULL != pMsg))
         {
             switch (pMsg->usMsgType)
-            {
-                /* 以下消息发送到LCD任务，直接传递，注意不在这里销毁 */
-                case UCORE_MESSAGE_TYPE_KEY_HOME:
-                case UCORE_MESSAGE_TYPE_KEY_OK:
-                case UCORE_MESSAGE_TYPE_KEY_UP:
-                case UCORE_MESSAGE_TYPE_KEY_DOWN:
-                case UCORE_MESSAGE_TYPE_KEY_RETURN:
-                    {
-                        OSMboxPost(g_QMboxUIMsg, pMsg);
-                    }
-                    break;                    
+            {                   
                 case UCORE_MESSAGE_TYPE_TEST1:
                     {
                         printf("Message testing 1.\r\n");

@@ -159,10 +159,10 @@
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
             <Capability>1</Capability>
-            <DriverSelection>4098</DriverSelection>
+            <DriverSelection>4099</DriverSelection>
           </Flash1>
           <Flash2>Segger\JL2CM3.dll</Flash2>
-          <Flash3>"" ()</Flash3>
+          <Flash3></Flash3>
           <Flash4></Flash4>
         </Utilities>
         <TargetArmAds>
@@ -345,7 +345,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.;..\BSP;..\..\..\..\..\uCOS-II\Ports\arm-cortex-m3\Generic\RealView;..\..\..\..\..\uCOS-II\Source;..\..\..\..\..\CPU\ST\STM32\inc;..\..\..\..\..\uC-CPU;..\..\..\..\..\uC-CPU\Arm-Cortex-M3\RealView;..\..\..\..\..\uC-LIB;..\..\..\..\..\uC-Probe\Target\Plugins\uCOS-II;..\..\..\..\..\uC-Probe\Target\Communication\Generic\Source;..\..\..\..\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\ST\STM32;..\..\..\..\..\uC-Probe\Target\Communication\Generic\RS-232\Source;..\..\..\..\..\User\inc;..\..\..\..\..\uCGUI\Config;..\..\..\..\..\uCGUI\GUIDemo;..\..\..\..\..\uCGUI\LCDDriver;..\..\..\..\..\uCGUI\GUI\AntiAlias;..\..\..\..\..\uCGUI\GUI\ConvertColor;..\..\..\..\..\uCGUI\GUI\ConvertMono;..\..\..\..\..\uCGUI\GUI\Core;..\..\..\..\..\uCGUI\GUI\Font;..\..\..\..\..\uCGUI\GUI\LCDDriver;..\..\..\..\..\uCGUI\GUI\MemDev;..\..\..\..\..\uCGUI\GUI\MultiLayer;..\..\..\..\..\uCGUI\GUI\Widget;..\..\..\..\..\uCGUI\GUI\WM</IncludePath>
+              <IncludePath>.;..\BSP;..\..\..\..\..\uCOS-II\Ports\arm-cortex-m3\Generic\RealView;..\..\..\..\..\uCOS-II\Source;..\..\..\..\..\CPU\ST\STM32\inc;..\..\..\..\..\uC-CPU;..\..\..\..\..\uC-CPU\Arm-Cortex-M3\RealView;..\..\..\..\..\uC-LIB;..\..\..\..\..\uC-Probe\Target\Plugins\uCOS-II;..\..\..\..\..\uC-Probe\Target\Communication\Generic\Source;..\..\..\..\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\ST\STM32;..\..\..\..\..\uC-Probe\Target\Communication\Generic\RS-232\Source;..\..\..\..\..\User\inc;..\..\..\..\..\uCGUI\Config;..\..\..\..\..\uCGUI\GUIDemo;..\..\..\..\..\uCGUI\LCDDriver;..\..\..\..\..\uCGUI\GUI\AntiAlias;..\..\..\..\..\uCGUI\GUI\ConvertColor;..\..\..\..\..\uCGUI\GUI\ConvertMono;..\..\..\..\..\uCGUI\GUI\Core;..\..\..\..\..\uCGUI\GUI\Font;..\..\..\..\..\uCGUI\GUI\LCDDriver;..\..\..\..\..\uCGUI\GUI\MemDev;..\..\..\..\..\uCGUI\GUI\MultiLayer;..\..\..\..\..\uCGUI\GUI\Widget;..\..\..\..\..\uCGUI\GUI\WM;..\..\..\..\..\uCGUI\User;..\..\..\..\..\uCGUI\User\Res</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -910,11 +910,6 @@
               <FilePath>..\..\..\..\..\User\user_task_key.c</FilePath>
             </File>
             <File>
-              <FileName>user_task_lcd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\User\user_task_lcd.c</FilePath>
-            </File>
-            <File>
               <FileName>user_task_hmc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\User\user_task_hmc.c</FilePath>
@@ -952,137 +947,12 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>uCGUI/Demo</GroupName>
+          <GroupName>uCGUI/Main</GroupName>
           <Files>
-            <File>
-              <FileName>GUIDEMO.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Automotive.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_Automotive.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Bitmap.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_Bitmap.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Bitmap4bpp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_Bitmap4bpp.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Circle.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_Circle.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_ColorBar.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_ColorBar.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_ColorList.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_ColorList.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Cursor.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_Cursor.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Dialog.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_Dialog.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Font.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_Font.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_FrameWin.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_FrameWin.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Graph.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_Graph.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_HardwareInfo.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_HardwareInfo.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Intro.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_Intro.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_LUT.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_LUT.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_MemDevB.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_MemDevB.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Messagebox.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_Messagebox.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Navi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_Navi.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Polygon.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_Polygon.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_ProgBar.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_ProgBar.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Speed.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_Speed.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Touch.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_Touch.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_WM.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\GUIDEMO_WM.c</FilePath>
-            </File>
             <File>
               <FileName>MainTask.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\MainTask.c</FilePath>
-            </File>
-            <File>
-              <FileName>MicriumLogo.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\MicriumLogo.c</FilePath>
-            </File>
-            <File>
-              <FileName>MicriumLogoWRed.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\uCGUI\GUIDemo\MicriumLogoWRed.c</FilePath>
+              <FilePath>..\..\..\..\..\uCGUI\GUIMain\MainTask.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -4645,6 +4515,29 @@
               <FilePath>..\..\..\..\..\uCGUI\GUI\WM\WMTouch.c</FilePath>
             </File>
           </Files>
+        </Group>
+        <Group>
+          <GroupName>uCGUI/User</GroupName>
+          <Files>
+            <File>
+              <FileName>GUI_UserApp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\uCGUI\User\GUI_UserApp.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_WndDef.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\..\..\..\uCGUI\User\GUI_WndDef.h</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_WndMain.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\uCGUI\User\GUI_WndMain.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>uCGUI/Res</GroupName>
         </Group>
       </Groups>
     </Target>
