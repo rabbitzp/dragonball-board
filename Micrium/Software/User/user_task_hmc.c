@@ -29,7 +29,7 @@
 #define SDA_read      GPIOB->IDR  & GPIO_Pin_7
 
 /*----------------local global vars declare here---------------------*/
-static OS_STK       g_UserTaskHmcSTK[DEFAULT_USER_LCD_STK_SIZE];
+static OS_STK       g_UserTaskHmcSTK[DEFAULT_USER_HMC_STK_SIZE];
 
 OS_EVENT            *g_QMboxHmcMsg = NULL;
 

@@ -17,11 +17,12 @@
 #define  __USER_CORE_H__
 /*--------------macros declare here-----------------------------*/
 #define DEFAULT_USER_TASK_KEY_PRIO              11
-#define DEFAULT_USER_TASK_LCD_PRIO              13
-#define DEFAULT_USER_TASK_HMC_PRIO              14
+#define DEFAULT_USER_TASK_UART_RECV_PRIO        13
+#define DEFAULT_USER_TASK_UART_PROCESS_PRIO     14
+#define DEFAULT_USER_TASK_HMC_PRIO              15
 
 #define DEFAULT_USER_KEY_STK_SIZE               64
-#define DEFAULT_USER_LCD_STK_SIZE               64
+#define DEFAULT_USER_UART_STK_SIZE              64
 #define DEFAULT_USER_HMC_STK_SIZE               64
 
 #define UCORE_MAX_MESSAGE_BUFF_LEN              (1024)                  /* max 1k dynic buff size */

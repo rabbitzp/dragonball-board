@@ -26,7 +26,7 @@
 #include "GUI_WndMain.h"
 
 /* include resources */
-#include "res_bmp_main_backgroud.h"
+#include "res_bmp_main_backgroud2.h"
 #include "res_bmp_radar.h"
 #include "res_bmp_comp.h"
 #include "res_bmp_config.h"
@@ -111,27 +111,21 @@ static void _cbWndMain(WM_MESSAGE* pMsg) {
             GUI_Clear();
 
             /* draw bmp */
-            GUI_DrawBitmap(&bmmain_backgroud, 0, 0);
+            GUI_DrawBitmap(&bmmain_backgroud2, 0, 0);
             break;
         case WM_KEY:
             switch (((WM_KEY_INFO*)(pMsg->Data.p))->Key) 
             {
-                case GUI_KEY_ESCAPE:
-                    printf("[MAIN] Key return\r\n");
-                    
+                case GUI_KEY_ESCAPE:                    
                     GUI_EndDialog(g_hWndMain, 1);
                     if (0 != WM_SetFocus(WM_HBKWIN))
                     {
                         printf("[GUI] Set focus window to desktop failed.\r\n");
                     }
                     break;
-                case GUI_KEY_ENTER:
-                    printf("[MAIN] Key Enter\r\n");
-                    
+                case GUI_KEY_ENTER:                    
                     break;
                 case GUI_KEY_DOWN:
-                    printf("[MAIN] Key down\r\n");
-
                     if (0 == g_ucCurrentSelChild)
                     {
                         g_ucCurrentSelChild = GUI_WND_MAIN_MAX_CHILD_CONTROLS - 1;                        
@@ -144,7 +138,6 @@ static void _cbWndMain(WM_MESSAGE* pMsg) {
                     /* send message to next control */
                     Message.MsgId  = GUI_USER_MSG_GETFOCUS;                    
                     WM_SendMessage(g_hWndChild[g_ucCurrentSelChild], &Message);
-                    //WM_InvalidateWindow(g_hWndChild[g_ucCurrentSelChild]);
 
                     /* unsel other controls */
                     for (i=0; i<GUI_WND_MAIN_MAX_CHILD_CONTROLS; i++)
@@ -154,14 +147,11 @@ static void _cbWndMain(WM_MESSAGE* pMsg) {
                             /* send message to next control */
                             Message.MsgId  = GUI_USER_MSG_LOSFOCUSED;                            
                             WM_SendMessage(g_hWndChild[i], &Message);
-                            //WM_InvalidateWindow(g_hWndChild[g_ucCurrentSelChild]);
                         }
                     }
                    
                     break;
                 case GUI_KEY_UP:
-                    printf("[MAIN] Key up\r\n");
-
                     if (GUI_WND_MAIN_MAX_CHILD_CONTROLS <= ++g_ucCurrentSelChild)
                     {
                         g_ucCurrentSelChild = 0;                        
@@ -170,7 +160,6 @@ static void _cbWndMain(WM_MESSAGE* pMsg) {
                     /* send message to next control */
                     Message.MsgId  = GUI_USER_MSG_GETFOCUS;                    
                     WM_SendMessage(g_hWndChild[g_ucCurrentSelChild], &Message);
-                    //WM_InvalidateWindow(g_hWndChild[g_ucCurrentSelChild]);
 
                     /* unsel other controls */
                     for (i=0; i<GUI_WND_MAIN_MAX_CHILD_CONTROLS; i++)
@@ -180,7 +169,6 @@ static void _cbWndMain(WM_MESSAGE* pMsg) {
                             /* send message to next control */
                             Message.MsgId  = GUI_USER_MSG_LOSFOCUSED;                            
                             WM_SendMessage(g_hWndChild[i], &Message);
-                            //WM_InvalidateWindow(g_hWndChild[g_ucCurrentSelChild]);
                         }
                     }
                     
@@ -225,14 +213,12 @@ static void _cbWndChild1(WM_MESSAGE* pMsg) {
             break;
         case GUI_USER_MSG_GETFOCUS:
             {
-                printf("child1 get focus.\r\n");
                 g_WndChildbkColor[0] = g_WndChildSelColor;
                 WM_InvalidateWindow(g_hWndChild[0]);
             }
             break;
         case GUI_USER_MSG_LOSFOCUSED:
             {
-                printf("child1 lost focus.\r\n");
                 g_WndChildbkColor[0] = g_WndChildNormalColor;
                 WM_InvalidateWindow(g_hWndChild[0]);
             }
@@ -247,10 +233,8 @@ static void _cbWndChild1(WM_MESSAGE* pMsg) {
                     GUI_EndDialog(g_hWndChild[0], 0);
                     break;
                 case GUI_KEY_DOWN:
-                    printf("[Child1] Key down\r\n");
                     break;
                 case GUI_KEY_UP:
-                    printf("[Child1] Key up\r\n");
                     break;
                 default:
                     break;
@@ -287,14 +271,12 @@ static void _cbWndChild2(WM_MESSAGE* pMsg) {
             break;
         case GUI_USER_MSG_GETFOCUS:
             {
-                printf("child2 get focus.\r\n");
                 g_WndChildbkColor[1] = g_WndChildSelColor;
                 WM_InvalidateWindow(g_hWndChild[1]);
             }
             break;
         case GUI_USER_MSG_LOSFOCUSED:
             {
-                printf("child2 lost focus.\r\n");
                 g_WndChildbkColor[1] = g_WndChildNormalColor;
                 WM_InvalidateWindow(g_hWndChild[1]);
             }
@@ -309,10 +291,8 @@ static void _cbWndChild2(WM_MESSAGE* pMsg) {
                     GUI_EndDialog(g_hWndChild[1], 0);
                     break;
                 case GUI_KEY_DOWN:
-                    printf("[Child2] Key down\r\n");
                     break;
                 case GUI_KEY_UP:
-                    printf("[Child2] Key up\r\n");
                     break;
                 default:
                     break;
@@ -349,14 +329,12 @@ static void _cbWndChild3(WM_MESSAGE* pMsg) {
             break;
         case GUI_USER_MSG_GETFOCUS:
             {
-                printf("child3 get focus.\r\n");
                 g_WndChildbkColor[2] = g_WndChildSelColor;
                 WM_InvalidateWindow(g_hWndChild[2]);
             }
             break;
         case GUI_USER_MSG_LOSFOCUSED:
             {
-                printf("child3 lost focus.\r\n");
                 g_WndChildbkColor[2] = g_WndChildNormalColor;
                 WM_InvalidateWindow(g_hWndChild[2]);
             }
@@ -371,10 +349,8 @@ static void _cbWndChild3(WM_MESSAGE* pMsg) {
                     GUI_EndDialog(g_hWndChild[2], 0);
                     break;
                 case GUI_KEY_DOWN:
-                    printf("[Child3] Key down\r\n");
                     break;
                 case GUI_KEY_UP:
-                    printf("[Child3] Key up\r\n");
                     break;
                 default:
                     break;
@@ -411,14 +387,12 @@ static void _cbWndChild4(WM_MESSAGE* pMsg) {
             break;
         case GUI_USER_MSG_GETFOCUS:
             {
-                printf("child4 get focus.\r\n");
                 g_WndChildbkColor[3] = g_WndChildSelColor;
                 WM_InvalidateWindow(g_hWndChild[3]);
             }
             break;
         case GUI_USER_MSG_LOSFOCUSED:
             {
-                printf("child4 lost focus.\r\n");
                 g_WndChildbkColor[3] = g_WndChildNormalColor;
                 WM_InvalidateWindow(g_hWndChild[3]);
             }
@@ -433,10 +407,8 @@ static void _cbWndChild4(WM_MESSAGE* pMsg) {
                     GUI_EndDialog(g_hWndChild[3], 0);
                     break;
                 case GUI_KEY_DOWN:
-                    printf("[Child4] Key down\r\n");
                     break;
                 case GUI_KEY_UP:
-                    printf("[Child4] Key up\r\n");
                     break;
                 default:
                     break;

@@ -35,6 +35,9 @@
 #define  BSP_MODULE
 #include <bsp.h>
 
+/* include user define headers */
+#include <user_task_uart.h>
+
 
 /*
 *********************************************************************************************************
@@ -125,6 +128,7 @@
 *********************************************************************************************************
 */
 
+
 /*
 *********************************************************************************************************
 *                                      LOCAL FUNCTION PROTOTYPES
@@ -149,6 +153,9 @@ static  void  BSP_PB_Init      (void);
 
 
 #if 1
+
+#if defined(ENABLE_UART_DEBUG_CONSOLE) && (1 == ENABLE_UART_DEBUG_CONSOLE)
+
 // jiaozi 150113
 #include <stdio.h>
 
@@ -178,6 +185,8 @@ int fputc(int ch, FILE *f)
 
   return ch;
 }
+#endif
+
 #if 1
 // jiaozi for usart1
 
@@ -186,7 +195,7 @@ void USART1_IRQHandler(void)
 {
 	u8 res;
 
-	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)  //接收到数据
+	if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)  //接收到数据
 	{
 		res = USART_ReceiveData(USART1);	//读取接收到的数据
 		printf("%c", res);
@@ -242,25 +251,29 @@ void db_stmdebug_init(u32 bound)
 
 #endif
 #if 1
-// jiaozi for stm 2 cc2530
-
-void cc2530_process(u8 in)
-{
-	return;
-}
-
-//串口2中断服务程序
+//串口2中断服务程序, jiaozi for stm 2 cc2530
 void USART2_IRQHandler(void)
 {
-	u8 res;
+    OS_CPU_SR   cpu_sr;
+	u8          *pcBuff = NULL;
 
-	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)  //接收到数据
+    OS_ENTER_CRITICAL();                         /* Tell uC/OS-II that we are starting an ISR          */
+    OSIntNesting++;
+    OS_EXIT_CRITICAL();
+    
+	if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)  //接收到数据
 	{
-		res = USART_ReceiveData(USART2);	//读取接收到的数据
-		printf("%c", res);
-		cc2530_process(res);
-		USART_ClearFlag(USART2, USART_IT_RXNE);
+        USART_ClearFlag(USART2, USART_IT_RXNE);
+        
+	    pcBuff = malloc(1);        
+		pcBuff[0] = USART_ReceiveData(USART2);	//读取接收到的数据	
+		
+        /* pass to up level process */
+        OSQPost(g_QSemUart2MsgRecv, (void *) pcBuff);
 	}
+
+    OSIntExit();                                 /* Tell uC/OS-II that we are leaving the ISR          */
+    
 	return;
 }
 

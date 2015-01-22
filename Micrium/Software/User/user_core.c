@@ -17,6 +17,7 @@
 #include <user_core.h>
 #include <user_task_key.h>
 #include <user_task_hmc.h>
+#include <user_task_uart.h>
 
 #define DEFAULT_USER_TASK_PRIO              5  //优先级高
 #define DEFAULT_USER_STK_SIZE               128
@@ -66,7 +67,13 @@ void UCore_TaskProc(void *p_arg)
     if (UCORE_ERR_SUCCESS != ucResult)
     {
         printf("Start user HMC task failed.\r\n");
-    }    
+    } 
+
+    ucResult = UUart_Start();
+    if (UCORE_ERR_SUCCESS != ucResult)
+    {
+        printf("Start user uart task failed.\r\n");
+    }     
 
     /* enter event loop */
     UCore_EventLoop();

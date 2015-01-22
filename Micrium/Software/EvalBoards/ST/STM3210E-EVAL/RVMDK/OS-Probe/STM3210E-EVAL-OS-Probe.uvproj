@@ -914,6 +914,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\User\user_task_hmc.c</FilePath>
             </File>
+            <File>
+              <FileName>user_task_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\User\user_task_uart.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
