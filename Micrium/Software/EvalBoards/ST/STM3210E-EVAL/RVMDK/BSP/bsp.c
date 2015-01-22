@@ -130,7 +130,8 @@
 *                                      LOCAL FUNCTION PROTOTYPES
 *********************************************************************************************************
 */
-
+#if 0
+// jiaozi no need
 static  void  BSP_ADC_Init     (void);
 
 static  void  BSP_Joystick_Init(void);
@@ -138,7 +139,7 @@ static  void  BSP_Joystick_Init(void);
 static  void  BSP_LED_Init     (void);
 
 static  void  BSP_PB_Init      (void);
-
+#endif
 /*
 *********************************************************************************************************
 *                                     LOCAL CONFIGURATION ERRORS
@@ -148,10 +149,8 @@ static  void  BSP_PB_Init      (void);
 
 
 #if 1
-// jiaozi 150113 for printf
+// jiaozi 150113
 #include <stdio.h>
-#define EN_USART1_RX	1
-#define USART_REC_LEN	63	//定义最大接收字节数
 
 #pragma import(__use_no_semihosting)             
 //标准库需要的支持函数                 
@@ -179,26 +178,10 @@ int fputc(int ch, FILE *f)
 
   return ch;
 }
-#ifdef EN_USART1_RX   //如果使能了接收
+#if 1
+// jiaozi for usart1
 
 //串口1中断服务程序
-
-u8 USART_RX_BUF[USART_REC_LEN];
-
-//接收状态
-//bit15：接收完成标志
-//bit14：接收到0x0d
-//bit13~0：接收到的有效字节数目，最大512字节
-
-u16 USART_RX_STA=0;	//接收状态标记	  
-
-/******************************************************************************
-* Function Name --> 串口1接收中断服务程序
-* Description   --> none
-* Input         --> none
-* Output        --> none
-* Reaturn       --> none 
-******************************************************************************/
 void USART1_IRQHandler(void)
 {
 	u8 res;
@@ -207,50 +190,14 @@ void USART1_IRQHandler(void)
 	{
 		res = USART_ReceiveData(USART1);	//读取接收到的数据
 		printf("%c", res);
-		
-		if((USART_RX_STA & 0x8000) == 0)//接收未完成
-		{
-			if(USART_RX_STA & 0x4000)//接收到了0x0d
-			{
-				/***********************************************
-                                  修改内容如下
-                    当用户数据当中有0x0d的时候修正的错误的判断
-				***********************************************/
-				
-				if(res != 0x0a)
-				{
-					USART_RX_BUF[USART_RX_STA & 0x3fff] = 0x0d;	//补上丢失的0x0d数据
-					USART_RX_STA++;
-					USART_RX_BUF[USART_RX_STA & 0x3fff] = res;	//继续接收数据
-					USART_RX_STA++;
-					USART_RX_STA &= 0xbfff;						//清除0x0d标志
-				}
-				
-				/***********************************************
-                                      修改完成
-				***********************************************/
-				
-				else	USART_RX_STA |= 0x8000;	//接收完成了
-			}
-			else //还没收到0x0d
-			{	
-				if(res == 0x0d)	USART_RX_STA |= 0x4000;
-				else
-				{
-					USART_RX_BUF[USART_RX_STA & 0x3fff] = res;
-					USART_RX_STA++;
-					if(USART_RX_STA > (USART_REC_LEN - 1))	USART_RX_STA = 0;//接收数据错误,重新开始接收	  
-				}		 
-			}
-		}	//end 接收未完成   		 
-	}	//end 接收到数据
+		USART_ClearFlag(USART1, USART_IT_RXNE);
+	}
+	return;
 }
 
 //=========================================================
 
-#endif	//end使能接收
-
-void db_usart1_init(u32 bound)
+void db_stmdebug_init(u32 bound)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 	USART_InitTypeDef USART_InitStructure;
@@ -279,7 +226,6 @@ void db_usart1_init(u32 bound)
 	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//收发模式
 	
 	USART_Init(USART1, &USART_InitStructure); //初始化串口
-#ifdef EN_USART1_RX	//如果使能了接收中断
 		
 	USART1->CR1 |= 1 << 8;	//PE中断使能
 	USART1->CR1 |= 1 << 5;	//接收缓冲区非空中断使能
@@ -287,13 +233,83 @@ void db_usart1_init(u32 bound)
 	BSP_IntVectSet(BSP_INT_ID_USART1, USART1_IRQHandler);
 	BSP_IntPrioSet(BSP_INT_ID_USART1, 2);
 	BSP_IntEn(BSP_INT_ID_USART1);
-#endif
 	
 	USART_Cmd(USART1, ENABLE);                    //使能串口
 
 	printf("\n%s\n", __FUNCTION__);
 	
 }
+
+#endif
+#if 1
+// jiaozi for stm 2 cc2530
+
+void cc2530_process(u8 in)
+{
+	return;
+}
+
+//串口2中断服务程序
+void USART2_IRQHandler(void)
+{
+	u8 res;
+
+	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)  //接收到数据
+	{
+		res = USART_ReceiveData(USART2);	//读取接收到的数据
+		printf("%c", res);
+		cc2530_process(res);
+		USART_ClearFlag(USART2, USART_IT_RXNE);
+	}
+	return;
+}
+
+//=========================================================
+
+
+void db_stm2cc2530_init(u32 bound)
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
+	USART_InitTypeDef USART_InitStructure;
+	 
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2 ,ENABLE);
+	USART_DeInit(USART2);  //复位串口1
+	
+	//USART1_TX   PA.2
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;	//复用推挽输出
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+   
+	//USART1_RX	  PA.3
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;//浮空输入
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+  
+	//USART 初始化设置
+	USART_InitStructure.USART_BaudRate = bound;	//设置波特率，一般设置为9600;
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;	//字长为8位数据格式
+	USART_InitStructure.USART_StopBits = USART_StopBits_1;	//一个停止位
+	USART_InitStructure.USART_Parity = USART_Parity_No;	//无奇偶校验位
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;	//无硬件数据流控制
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//收发模式
+	
+	USART_Init(USART2, &USART_InitStructure); //初始化串口
+		
+	USART2->CR1 |= 1 << 8;	//PE中断使能
+	USART2->CR1 |= 1 << 5;	//接收缓冲区非空中断使能
+
+	BSP_IntVectSet(BSP_INT_ID_USART2, USART2_IRQHandler);
+	BSP_IntPrioSet(BSP_INT_ID_USART2, 2);
+	BSP_IntEn(BSP_INT_ID_USART2);
+	
+	USART_Cmd(USART2, ENABLE);                    //使能串口
+
+	printf("\n%s\n", __FUNCTION__);
+	
+}
+#endif
 
 void  BSP_Init (void)
 {
@@ -346,7 +362,9 @@ void  BSP_Init (void)
 
 void  BSP_Init_post (void)
 {
-    db_usart1_init(115200);
+    db_stmdebug_init(115200);
+
+    db_stm2cc2530_init(9600);
 
 	// 不再需要
     //BSP_ADC_Init();                                             /* Initialize the I/Os for the ADC      controls.       */
@@ -415,7 +433,8 @@ INT32U  OS_CPU_SysTickClkFreq (void)
     return (freq);
 }
 
-
+#if 0
+// jiaozi noneed
 /*
 *********************************************************************************************************
 *********************************************************************************************************
@@ -908,7 +927,7 @@ void  BSP_LED_Toggle (CPU_INT08U led)
              break;
     }
 }
-
+#endif
 /*
 *********************************************************************************************************
 *********************************************************************************************************
