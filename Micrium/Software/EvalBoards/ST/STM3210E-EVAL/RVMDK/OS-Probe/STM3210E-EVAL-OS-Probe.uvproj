@@ -345,7 +345,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.;..\BSP;..\..\..\..\..\uCOS-II\Ports\arm-cortex-m3\Generic\RealView;..\..\..\..\..\uCOS-II\Source;..\..\..\..\..\CPU\ST\STM32\inc;..\..\..\..\..\uC-CPU;..\..\..\..\..\uC-CPU\Arm-Cortex-M3\RealView;..\..\..\..\..\uC-LIB;..\..\..\..\..\uC-Probe\Target\Plugins\uCOS-II;..\..\..\..\..\uC-Probe\Target\Communication\Generic\Source;..\..\..\..\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\ST\STM32;..\..\..\..\..\uC-Probe\Target\Communication\Generic\RS-232\Source;..\..\..\..\..\User\inc;..\..\..\..\..\uCGUI\Config;..\..\..\..\..\uCGUI\GUIDemo;..\..\..\..\..\uCGUI\LCDDriver;..\..\..\..\..\uCGUI\GUI\AntiAlias;..\..\..\..\..\uCGUI\GUI\ConvertColor;..\..\..\..\..\uCGUI\GUI\ConvertMono;..\..\..\..\..\uCGUI\GUI\Core;..\..\..\..\..\uCGUI\GUI\Font;..\..\..\..\..\uCGUI\GUI\LCDDriver;..\..\..\..\..\uCGUI\GUI\MemDev;..\..\..\..\..\uCGUI\GUI\MultiLayer;..\..\..\..\..\uCGUI\GUI\Widget;..\..\..\..\..\uCGUI\GUI\WM;..\..\..\..\..\uCGUI\User;..\..\..\..\..\uCGUI\User\Res</IncludePath>
+              <IncludePath>.;..\BSP;..\..\..\..\..\uCOS-II\Ports\arm-cortex-m3\Generic\RealView;..\..\..\..\..\uCOS-II\Source;..\..\..\..\..\CPU\ST\STM32\inc;..\..\..\..\..\uC-CPU;..\..\..\..\..\uC-CPU\Arm-Cortex-M3\RealView;..\..\..\..\..\uC-LIB;..\..\..\..\..\uC-Probe\Target\Plugins\uCOS-II;..\..\..\..\..\uC-Probe\Target\Communication\Generic\Source;..\..\..\..\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\ST\STM32;..\..\..\..\..\uC-Probe\Target\Communication\Generic\RS-232\Source;..\..\..\..\..\User\inc;..\..\..\..\..\User\eem;..\..\..\..\..\uCGUI\Config;..\..\..\..\..\uCGUI\GUIDemo;..\..\..\..\..\uCGUI\LCDDriver;..\..\..\..\..\uCGUI\GUI\AntiAlias;..\..\..\..\..\uCGUI\GUI\ConvertColor;..\..\..\..\..\uCGUI\GUI\ConvertMono;..\..\..\..\..\uCGUI\GUI\Core;..\..\..\..\..\uCGUI\GUI\Font;..\..\..\..\..\uCGUI\GUI\LCDDriver;..\..\..\..\..\uCGUI\GUI\MemDev;..\..\..\..\..\uCGUI\GUI\MultiLayer;..\..\..\..\..\uCGUI\GUI\Widget;..\..\..\..\..\uCGUI\GUI\WM;..\..\..\..\..\uCGUI\User;..\..\..\..\..\uCGUI\User\Res</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -449,6 +449,11 @@
               <FileName>bsp_periph.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\BSP\bsp_periph.c</FilePath>
+            </File>
+            <File>
+              <FileName>fsmc_nand.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\fsmc_nand.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -918,6 +923,11 @@
               <FileName>user_task_uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\User\user_task_uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>eem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\User\eem\eem.c</FilePath>
             </File>
           </Files>
         </Group>

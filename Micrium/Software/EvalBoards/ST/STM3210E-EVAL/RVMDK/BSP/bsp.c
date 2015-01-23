@@ -34,6 +34,7 @@
 
 #define  BSP_MODULE
 #include <bsp.h>
+#include <fsmc_nand.h>
 
 /* include user define headers */
 #include <user_task_uart.h>
@@ -375,9 +376,14 @@ void  BSP_Init (void)
 
 void  BSP_Init_post (void)
 {
+    /* init debug console uart1 */
     db_stmdebug_init(115200);
 
+    /* init uart2 for cc2530 */
     db_stm2cc2530_init(9600);
+
+    /* init nand flash */
+    db_nand_init();
 
 	// 不再需要
     //BSP_ADC_Init();                                             /* Initialize the I/Os for the ADC      controls.       */
