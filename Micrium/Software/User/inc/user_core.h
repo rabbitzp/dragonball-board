@@ -36,6 +36,8 @@ typedef enum _tagUCErrCode
     UCORE_ERR_MSG_POST_FAILED               = 3,
     UCORE_ERR_CREATE_TASK_FAILED            = 4,
     UCORE_ERR_PAPA_ERROR                    = 5,
+    UCORE_ERR_INVALID_MESSAGE               = 6,
+    UCORE_ERR_NO_MESSAGE                    = 7,
 
     /* bottom */
     UCORE_ERR_BUTT,

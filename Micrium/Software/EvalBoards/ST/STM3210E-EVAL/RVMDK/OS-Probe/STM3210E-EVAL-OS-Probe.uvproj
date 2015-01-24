@@ -343,7 +343,7 @@
             <uThumb>0</uThumb>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define></Define>
+              <Define>OS_TYPE_UCOS</Define>
               <Undefine></Undefine>
               <IncludePath>.;..\BSP;..\..\..\..\..\uCOS-II\Ports\arm-cortex-m3\Generic\RealView;..\..\..\..\..\uCOS-II\Source;..\..\..\..\..\CPU\ST\STM32\inc;..\..\..\..\..\uC-CPU;..\..\..\..\..\uC-CPU\Arm-Cortex-M3\RealView;..\..\..\..\..\uC-LIB;..\..\..\..\..\uC-Probe\Target\Plugins\uCOS-II;..\..\..\..\..\uC-Probe\Target\Communication\Generic\Source;..\..\..\..\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\ST\STM32;..\..\..\..\..\uC-Probe\Target\Communication\Generic\RS-232\Source;..\..\..\..\..\User\inc;..\..\..\..\..\User\eem;..\..\..\..\..\uCGUI\Config;..\..\..\..\..\uCGUI\GUIDemo;..\..\..\..\..\uCGUI\LCDDriver;..\..\..\..\..\uCGUI\GUI\AntiAlias;..\..\..\..\..\uCGUI\GUI\ConvertColor;..\..\..\..\..\uCGUI\GUI\ConvertMono;..\..\..\..\..\uCGUI\GUI\Core;..\..\..\..\..\uCGUI\GUI\Font;..\..\..\..\..\uCGUI\GUI\LCDDriver;..\..\..\..\..\uCGUI\GUI\MemDev;..\..\..\..\..\uCGUI\GUI\MultiLayer;..\..\..\..\..\uCGUI\GUI\Widget;..\..\..\..\..\uCGUI\GUI\WM;..\..\..\..\..\uCGUI\User;..\..\..\..\..\uCGUI\User\Res</IncludePath>
             </VariousControls>

@@ -16,6 +16,7 @@
 #include <user_core.h>
 #include <user_task_uart.h>
 #include "GUI_WndDef.h"  /* valid LCD configuration */
+#include <eem.h>
 
 /*----------------macros declare here---------------------*/
 #define             MAX_UART_RECV_MSG_BUFF_SIZE              255
@@ -123,7 +124,9 @@ void UUart_EventRecvLoop(void)
 
 void UUart_TaskProcessProc(void *p_arg)
 {
-    INT8U err = 0;
+    INT8U           err       = 0;
+    u8              ucResult  = 0;
+    EEM_HEADER_S    *pHeader  = NULL;
     
     printf("User uart process task start.\r\n");
 
@@ -133,7 +136,14 @@ void UUart_TaskProcessProc(void *p_arg)
         OSSemPend(g_OSemBuffRwEvent, 1000, &err);
         if (OS_NO_ERR == err)
         {
-            //UUart_DumpMemory();
+    		while (UCORE_ERR_NO_MESSAGE != (ucResult = EEM_GetMessage(g_ucUart2RXArray, &g_ucUartBuffPos, &pHeader)))
+    		{
+    			if (UCORE_ERR_SUCCESS == ucResult)
+    			{
+    				EEM_DumpMessage(pHeader);
+    				EEM_Delete((void **) &pHeader);	
+    			}
+    		}
                         
             OSSemPost(g_OSemBuffRwEvent);
         }

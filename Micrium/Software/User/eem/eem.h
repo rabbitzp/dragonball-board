@@ -28,8 +28,9 @@ typedef enum _tagEEMCommand
     /* 0 - 99 reseverd */
 
     /* 100 - 499 system */
-    EEM_COMMAND_EP_ONLINE   = 100,
-    EEM_COMMAND_EP_OFFLINE  = 101,
+    EEM_COMMAND_COOR_STATCHAG   = 100,
+    EEM_COMMAND_EP_ONLINE       = 101,
+    EEM_COMMAND_EP_OFFLINE      = 102,
 
     /* user command from 500 */
 
@@ -85,7 +86,12 @@ void            *EEM_GetPayload(EEM_HEADER_S *Header, u16 PayloadType, u16 *Payl
 
 u8              *EEM_GetBuff(EEM_HEADER_S *Header, u16 *len);
 
+u8              EEM_GetMessage(u8 *Buff, u8 *BufSize, EEM_HEADER_S **ppHeader);
+
 void            EEM_Delete(void **Header);
+
+/* for debug using */
+void			EEM_DumpMessage(EEM_HEADER_S *Header);
 
 /*---------------extern vars & functinos here-----------------------*/
 
