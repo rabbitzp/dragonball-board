@@ -258,7 +258,7 @@ u8 *EEM_GetBuff(EEM_HEADER_S *Header, u16 *len)
 
     /* get crc bytes */
     pcArray = (u8 *)Header;
-    pCRC    = (u8 *)Header + sizeof(EEM_HEADER_S) + Header->usPayloadLen;
+    pCRC    = (u16 *) ((u8 *)Header + sizeof(EEM_HEADER_S) + Header->usPayloadLen);
 
     /* init crc */
     *pCRC = 0;
