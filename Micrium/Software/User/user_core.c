@@ -19,6 +19,8 @@
 #include <user_task_key.h>
 #include <user_task_hmc.h>
 #include <user_task_uart.h>
+#include <eem.h>
+#include <eem_struct.h>
 
 #define DEFAULT_USER_TASK_PRIO              5  //优先级高
 #define DEFAULT_USER_STK_SIZE               128
@@ -99,6 +101,7 @@ void UCoreInit(void)
 
 void UCore_EventLoop(void)
 {
+    u16             i           = 0;
     u8              ucResult    = 0;
     INT8U           err         = 0;
     UCORE_MSG_S     *pMsg       = NULL;
@@ -118,7 +121,13 @@ void UCore_EventLoop(void)
                     break;
                 case UCORE_MESSAGE_TYPE_EP_ONLINE:
                     {
-                        EP_INFO_S *pEpInfo  = NULL;
+                        u16          i          = 0;
+                        u8           ucRet      = 0;
+                        u16          usTotalLen = 0;  
+                        u8           *pcBuff    = NULL;
+                        EP_INFO_S    *pEpInfo   = NULL;
+                        EEM_HEADER_S *pHeader   = NULL;
+                        char         sRawData[] = {0x04, 0x00, 0x01, 0x11, 0x00, 0x16};
 
                         /* get ep info */
                         pEpInfo = (EP_INFO_S *) pMsg->pBuf;
@@ -132,11 +141,10 @@ void UCore_EventLoop(void)
                                 if (UCORE_ERR_SUCCESS != ucResult)
                                 {
                                     printf("Update ep[%d] failed.\r\n", pEpInfo->ucEpId);
+                                    break;
                                 }
-                                else
-                                {
-                                    printf("Update EP[%d] info, type:%d, addr:%02X, name:%s.\r\n", pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
-                                }
+                                
+                                printf("Update EP[%d] info, type:%d, addr:%02X, name:%s.\r\n", pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
                             }
                             else/* add new ep */
                             {
@@ -145,13 +153,67 @@ void UCore_EventLoop(void)
                                 if (UCORE_ERR_SUCCESS != ucResult)
                                 {
                                     printf("Add ep[%d] failed.\r\n", pEpInfo->ucEpId);
+                                    break;
                                 }
-                                else
-                                {
-                                    printf("New EP[%d] online, type:%d, addr:%02X, name:%s.\r\n", pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
-                                }
+                                
+                                printf("New EP[%d] online, type:%d, addr:%02X, name:%s.\r\n", pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
                             }
                         }
+
+                        /* for testing, send a comm query message */
+                        /* send ep online message main board */    
+                    	pHeader = EEM_CreateHeader(pEpInfo->ucEpId, EEM_COMMAND_TRANS_COM, UCORE_ERR_SUCCESS);
+                    	if (NULL == pHeader)
+                    	{
+                            return;
+                        }
+
+                        /* apend ep addr */
+                    	ucRet = EEM_AppendPayload(&pHeader, EEM_PAYLOAD_TYPE_EP_ADDR, sizeof(u16), (void *) &(pEpInfo->usEpAddr));
+                        if (UCORE_ERR_SUCCESS != ucRet)
+                        {
+                            /* clean buffer */
+                            EEM_Delete((void **) &pHeader);        
+                            return;
+                        }
+
+                        /* append raw data */
+                    	ucRet = EEM_AppendPayload(&pHeader, EEM_PAYLOAD_TYPE_RAW_DATA, sizeof(sRawData), (void *) sRawData);
+                        if (UCORE_ERR_SUCCESS != ucRet)
+                        {
+                            /* clean buffer */
+                            EEM_Delete((void **) &pHeader);
+                            return;
+                        }
+
+                        /* get buff */
+                    	pcBuff = EEM_GetBuff(pHeader, &usTotalLen);
+                        if (NULL != pcBuff)
+                        {
+                            for (i=0; i<usTotalLen; i++)
+                            {
+                                /* send to uart */
+                                USART_SendData(USART2, pcBuff[i]);
+
+                                /* Loop until the end of transmission */
+                                while(USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);
+                            }
+                        }
+
+                        /* dump message */
+                        EEM_DumpMessage(pHeader);
+
+                        /* clean buffer */
+                        EEM_Delete((void **) &pHeader);
+                    }
+                    break;
+                case UCORE_MESSAGE_TYPE_TRANS_COM:
+                    {
+                        char *pcBuff = (char *) pMsg->pBuf;
+                        printf("Trans COM:");
+                        for (i=0; i<pMsg->usBufLen; i++)
+                            printf("%02X ", pcBuff[i]);
+                        printf("\r\n");
                     }
                     break;
                 case UCORE_MESSAGE_TYPE_TEST1:

@@ -54,9 +54,10 @@ typedef enum _tagUCMsgType
     UCORE_MESSAGE_TYPE_EP_OFFLINE       = 102,
 
 
-    /* 200 - 1000 for user*/     
-    UCORE_MESSAGE_TYPE_TEST1        = 200,
-    UCORE_MESSAGE_TYPE_TEST2        = 201,
+    /* 200 - 1000 for user*/
+    UCORE_MESSAGE_TYPE_TRANS_COM        = 200,
+    UCORE_MESSAGE_TYPE_TEST1            = 201,
+    UCORE_MESSAGE_TYPE_TEST2            = 202,
     
 }UCORE_MESSAGE_TYPE_E;
 

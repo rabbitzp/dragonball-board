@@ -17,6 +17,7 @@
 #include <user_task_uart.h>
 #include "GUI_WndDef.h"  /* valid LCD configuration */
 #include <eem.h>
+#include <eem_struct.h>
 #include <user_ep_manage.h>
 
 /*----------------macros declare here---------------------*/
@@ -127,10 +128,7 @@ void UUart_TaskProcessProc(void *p_arg)
 {
     INT8U           err       = 0;
     u8              ucResult  = 0;
-    u16             usPayLen  = 0;
-    void            *pPayload = NULL;
     EEM_HEADER_S    *pHeader  = NULL;
-    EP_INFO_S       *pEpInfo  = NULL;
     
     printf("User uart process task start.\r\n");
 
@@ -157,8 +155,12 @@ void UUart_TaskProcessProc(void *p_arg)
                             break;
                         case EEM_COMMAND_EP_ONLINE:
                             {
+                                u16             usPayLen  = 0;
+                                EEM_EP_INFO_S   *pPayload = NULL;
+                                EP_INFO_S       *pEpInfo  = NULL;
+                                
                                 /* here get message payload */
-                                pPayload = EEM_GetPayload(pHeader, EEM_PAYLOAD_TYPE_EP_ADDR, &usPayLen);
+                                pPayload = (EEM_EP_INFO_S *) EEM_GetPayload(pHeader, EEM_PAYLOAD_TYPE_EP_INFO, &usPayLen);
                                 if (NULL != pPayload) /* must not be null */
                                 {
                                     /* alloc buff */
@@ -170,10 +172,15 @@ void UUart_TaskProcessProc(void *p_arg)
 
                                         /* asign values */
                                     	pEpInfo->ucEpId     = pHeader->ucEpId;
-                                        pEpInfo->ucEpType   = EP_TYPE_COOR;
-                                        pEpInfo->usEpAddr   = *((u16 *) pPayload);    
-                                        
-                                        strncpy((char *) pEpInfo->sEpName, "EP", MAX_EP_NAME_LEN - 1);
+                                        pEpInfo->ucEpType   = pPayload->ucEpType;
+                                        pEpInfo->usEpAddr   = pPayload->usEpAddr;    
+
+                                        if (EP_TYPE_EP == pEpInfo->ucEpType)
+                                            strncpy((char *) pEpInfo->sEpName, "EP", MAX_EP_NAME_LEN - 1);
+                                        else if (EP_TYPE_ROUTER == pEpInfo->ucEpType)
+                                            strncpy((char *) pEpInfo->sEpName, "Router", MAX_EP_NAME_LEN - 1);
+                                        else
+                                            strncpy((char *) pEpInfo->sEpName, "Coord", MAX_EP_NAME_LEN - 1);
 
                                         /* ok, finnally send a message to core */
                                         ucResult = UCore_PostMessage1(UCORE_MESSAGE_TYPE_EP_ONLINE, sizeof(EP_INFO_S), (void *)pEpInfo);
@@ -188,10 +195,28 @@ void UUart_TaskProcessProc(void *p_arg)
                                             printf("Send Ep[%d] online message Failed.\r\n", pHeader->ucEpId);
                                         }
                                     }
-                                }                               
+                                }
                             }
                             break;
                         case EEM_COMMAND_EP_OFFLINE:
+                            break;
+                        case EEM_COMMAND_TRANS_COM:
+                            {
+                                u16             usPayLen  = 0;
+                                u8              *pPayload = NULL;
+                                
+                                /* here get message payload */
+                                pPayload = (u8 *) EEM_GetPayload(pHeader, EEM_PAYLOAD_TYPE_RAW_DATA, &usPayLen);
+                                if (NULL != pPayload) /* must not be null */
+                                {
+                                    /* ok, send a message to core */
+                                    ucResult = UCore_PostMessage1(UCORE_MESSAGE_TYPE_TRANS_COM, usPayLen, (void *) pPayload);
+                                    if (UCORE_ERR_SUCCESS != ucResult)
+                                    {
+                                        printf("Send Ep[%d] trans com message Failed.\r\n", pHeader->ucEpId);
+                                    }
+                                }                                
+                            }
                             break;
                         default:
                             printf("Unknown message type[%d] from uart.\r\n", pHeader->usCommand);
