@@ -22,6 +22,6 @@ LR_IROM1 0x08000000 0x0007FFFF 									;; Load region
         * (+RW,+ZI)
     }                                                           ;; The following declarations select the "two region model" ;
                                                                 ;; A default __user_initial_stackheap() will be used        ;
-    ARM_LIB_HEAP  0x2000F700 EMPTY  0x00000200   {}
-    ARM_LIB_STACK 0x2000FB00 EMPTY -0x00000200   {}
+    ARM_LIB_HEAP  0x2000DC00 EMPTY  0x00002000   {}				;; for stm32f103ze, asign 8K heap
+    ARM_LIB_STACK 0x20010000 EMPTY -0x00000400   {}				;; for stm32f103ze, asign 1K stack
 }

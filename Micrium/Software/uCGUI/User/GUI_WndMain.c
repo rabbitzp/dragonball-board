@@ -112,6 +112,17 @@ static void _cbWndMain(WM_MESSAGE* pMsg) {
 
             /* draw bmp */
             GUI_DrawBitmap(&bmmain_backgroud2, 0, 0);
+
+            /* draw circle */
+            GUI_SetColor(GUI_WHITE);
+            
+            GUI_DrawCircle(90, 80, 5);
+            GUI_DrawCircle(110, 80, 4);
+            GUI_DrawCircle(130, 80, 4);
+
+            /* fill circle */
+            GUI_FillCircle(90, 80, 5);
+            
             break;
         case WM_KEY:
             switch (((WM_KEY_INFO*)(pMsg->Data.p))->Key) 

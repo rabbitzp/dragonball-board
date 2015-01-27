@@ -13,6 +13,7 @@
 *********************************************************************************************************
 */
 #include <includes.h>
+#include <math.h>
 #include <user_core.h>
 #include <user_task_hmc.h>
 
@@ -265,7 +266,8 @@ void read_hmc5883l()
     if(x>0x7fff)x-=0xffff;	  
     if(y>0x7fff)y-=0xffff;	  
     angle= atan2(y,x) * (180 / 3.14159265) + 180;  
-    conversion(angle);
+
+    /* conversion(angle); */
 }
 
 u8 UHMC_Start(void)
@@ -316,10 +318,7 @@ void UHMC_Init(void)
 }
 
 void UHMC_EventLoop(void)
-{
-    INT8U           err     = 0;    
-    UCORE_MSG_S     *pMsg   = NULL;   	
-    
+{    
     while (1)
     {
         read_hmc5883l();

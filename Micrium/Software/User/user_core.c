@@ -15,6 +15,7 @@
 
 #include <includes.h>
 #include <user_core.h>
+#include <user_ep_manage.h>
 #include <user_task_key.h>
 #include <user_task_hmc.h>
 #include <user_task_uart.h>
@@ -56,6 +57,13 @@ void UCore_TaskProc(void *p_arg)
     /* call init */
     UCoreInit();
 
+    /* init ep manager */
+    ucResult = UEM_Init();
+    if (UCORE_ERR_SUCCESS != ucResult)
+    {
+        printf("Init ep manager failed.\r\n");
+    }    
+
     /* create sub task */
     ucResult = UKey_Start();
     if (UCORE_ERR_SUCCESS != ucResult)
@@ -91,8 +99,9 @@ void UCoreInit(void)
 
 void UCore_EventLoop(void)
 {
-    INT8U           err     = 0;
-    UCORE_MSG_S     *pMsg   = NULL;
+    u8              ucResult    = 0;
+    INT8U           err         = 0;
+    UCORE_MSG_S     *pMsg       = NULL;
     
     /* main process here */
     while (1)
@@ -101,25 +110,67 @@ void UCore_EventLoop(void)
         if ((OS_NO_ERR == err) && (NULL != pMsg))
         {
             switch (pMsg->usMsgType)
-            {                   
+            {
+                case UCORE_MESSAGE_TYPE_COOR_STATCHAG:
+                    {
+                        printf("Coordinator state change.\r\n");
+                    }
+                    break;
+                case UCORE_MESSAGE_TYPE_EP_ONLINE:
+                    {
+                        EP_INFO_S *pEpInfo  = NULL;
+
+                        /* get ep info */
+                        pEpInfo = (EP_INFO_S *) pMsg->pBuf;
+                        if (NULL != pEpInfo)
+                        {
+                            /* try find */
+                            if (NULL != UEM_FindEp(pEpInfo->ucEpId))
+                            {
+                                /* so update ep info */
+                                ucResult = UEM_UpdateEp(pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
+                                if (UCORE_ERR_SUCCESS != ucResult)
+                                {
+                                    printf("Update ep[%d] failed.\r\n", pEpInfo->ucEpId);
+                                }
+                                else
+                                {
+                                    printf("Update EP[%d] info, type:%d, addr:%02X, name:%s.\r\n", pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
+                                }
+                            }
+                            else/* add new ep */
+                            {
+                                /* add to ep list */
+                                ucResult = UEM_AddEp(pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
+                                if (UCORE_ERR_SUCCESS != ucResult)
+                                {
+                                    printf("Add ep[%d] failed.\r\n", pEpInfo->ucEpId);
+                                }
+                                else
+                                {
+                                    printf("New EP[%d] online, type:%d, addr:%02X, name:%s.\r\n", pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
+                                }
+                            }
+                        }
+                    }
+                    break;
                 case UCORE_MESSAGE_TYPE_TEST1:
                     {
                         printf("Message testing 1.\r\n");
-                        UCORE_DEL_MESSAGE(pMsg);
                     }
                     break;
                 case UCORE_MESSAGE_TYPE_TEST2:
                     {
                         printf("Message testing 2.\r\n");
-                        UCORE_DEL_MESSAGE(pMsg);
                     }
                     break;                    
                 default:
                     printf("Unknown message type:%d\r\n", pMsg->usMsgType);
-
-                    UCORE_DEL_MESSAGE(pMsg);
                     break;
             }
+
+            /* delete message */
+            UCORE_DEL_MESSAGE(pMsg);
         }
     }
 }

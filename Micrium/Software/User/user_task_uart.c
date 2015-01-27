@@ -17,6 +17,7 @@
 #include <user_task_uart.h>
 #include "GUI_WndDef.h"  /* valid LCD configuration */
 #include <eem.h>
+#include <user_ep_manage.h>
 
 /*----------------macros declare here---------------------*/
 #define             MAX_UART_RECV_MSG_BUFF_SIZE              255
@@ -126,7 +127,10 @@ void UUart_TaskProcessProc(void *p_arg)
 {
     INT8U           err       = 0;
     u8              ucResult  = 0;
+    u16             usPayLen  = 0;
+    void            *pPayload = NULL;
     EEM_HEADER_S    *pHeader  = NULL;
+    EP_INFO_S       *pEpInfo  = NULL;
     
     printf("User uart process task start.\r\n");
 
@@ -140,7 +144,61 @@ void UUart_TaskProcessProc(void *p_arg)
     		{
     			if (UCORE_ERR_SUCCESS == ucResult)
     			{
-    				EEM_DumpMessage(pHeader);
+    			    switch (pHeader->usCommand)
+                    {
+                        case EEM_COMMAND_COOR_STATCHAG:
+                            {   
+                                ucResult = UCore_PostMessage1(UCORE_MESSAGE_TYPE_COOR_STATCHAG, 0, NULL);
+                                if (UCORE_ERR_SUCCESS != ucResult)
+                                {
+                                    printf("Send coordinator state change message Failed.\r\n");
+                                }
+                            }
+                            break;
+                        case EEM_COMMAND_EP_ONLINE:
+                            {
+                                /* here get message payload */
+                                pPayload = EEM_GetPayload(pHeader, EEM_PAYLOAD_TYPE_EP_ADDR, &usPayLen);
+                                if (NULL != pPayload) /* must not be null */
+                                {
+                                    /* alloc buff */
+                                    pEpInfo = (EP_INFO_S *) malloc(sizeof(EP_INFO_S));
+                                    if (NULL != pEpInfo)
+                                    {
+                                        /* clear buffer */
+                                        memset(pEpInfo, 0, sizeof(EP_INFO_S));
+
+                                        /* asign values */
+                                    	pEpInfo->ucEpId     = pHeader->ucEpId;
+                                        pEpInfo->ucEpType   = EP_TYPE_COOR;
+                                        pEpInfo->usEpAddr   = *((u16 *) pPayload);    
+                                        
+                                        strncpy((char *) pEpInfo->sEpName, "EP", MAX_EP_NAME_LEN - 1);
+
+                                        /* ok, finnally send a message to core */
+                                        ucResult = UCore_PostMessage1(UCORE_MESSAGE_TYPE_EP_ONLINE, sizeof(EP_INFO_S), (void *)pEpInfo);
+
+                                        /* free buff first */                                        
+                                        free((void *)pEpInfo);
+                                        pEpInfo = NULL;
+
+                                        /* check result */                                        
+                                        if (UCORE_ERR_SUCCESS != ucResult)
+                                        {
+                                            printf("Send Ep[%d] online message Failed.\r\n", pHeader->ucEpId);
+                                        }
+                                    }
+                                }                               
+                            }
+                            break;
+                        case EEM_COMMAND_EP_OFFLINE:
+                            break;
+                        default:
+                            printf("Unknown message type[%d] from uart.\r\n", pHeader->usCommand);
+                            break;
+                    }                    
+
+                    /* all message delete here */
     				EEM_Delete((void **) &pHeader);	
     			}
     		}

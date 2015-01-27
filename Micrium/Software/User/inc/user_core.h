@@ -46,10 +46,13 @@ typedef enum _tagUCErrCode
 
 typedef enum _tagUCMsgType
 {
-    /* 0 - 100 reserved*/
+    /* 0 - 99 reserved*/
 
-    /* 100- 200 system*/
-    
+    /* 100- 199 system*/
+    UCORE_MESSAGE_TYPE_COOR_STATCHAG    = 100,
+    UCORE_MESSAGE_TYPE_EP_ONLINE        = 101,
+    UCORE_MESSAGE_TYPE_EP_OFFLINE       = 102,
+
 
     /* 200 - 1000 for user*/     
     UCORE_MESSAGE_TYPE_TEST1        = 200,
