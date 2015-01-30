@@ -159,6 +159,11 @@ static  void  BSP_PB_Init      (void);
 
 // jiaozi 150113
 #include <stdio.h>
+#define print_USART 0
+#define print_LCD 1
+static vu8 print = print_USART;
+static vu8 print_x = 40;
+static vu8 print_y = 40;
 
 #pragma import(__use_no_semihosting)             
 //标准库需要的支持函数                 
@@ -176,16 +181,45 @@ _sys_exit(int x)
 } 
 //重定义fputc函数 
 int fputc(int ch, FILE *f)
-{      
+{
+	if (print_USART == print) {
   USART_SendData(USART1, (u8) ch);
 
   /* Loop until the end of transmission */
   while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET)
   {
   }
-
+		} else {
+			if (10 == ch) {
+				print_x = 0x40;
+				print_y += 8;
+				if (print_y >= 180)
+					print_y = 40;
+			} else {
+				GUI_DispCharAt((u8) ch, print_x, print_y);
+				print_x += 6;
+				
+				if (print_x >= 180) {
+					print_x = 40;
+					print_y += 8;
+					if (print_y >= 180)
+						print_y = 40;
+				}
+			}
+			
+		}
   return ch;
 }
+void db_print_USART(void)
+{
+	print = print_USART;
+}
+void db_print_LCD(void)
+{
+	print_x = print_y = 40;
+	print = print_LCD;
+}
+
 #endif
 
 #if 1
@@ -377,7 +411,7 @@ void  BSP_Init (void)
 void  BSP_Init_post (void)
 {
     /* init debug console uart1 */
-    db_stmdebug_init(115200);
+    db_stmdebug_init(9600);
 
     /* init uart2 for cc2530 */
     db_stm2cc2530_init(9600);
