@@ -1,4 +1,0 @@
----- EEM_EP_GPS_INFO_S Matches (3 in 2 files) ----
-Eem_struct.h (projects\zstack\utilities\serialapp\source\eem):} EEM_EP_GPS_INFO_S;
-SerialApp.c (projects\zstack\utilities\serialapp\source):    EEM_EP_GPS_INFO_S   stEemGpsInfo;
-SerialApp.c (projects\zstack\utilities\serialapp\source):	ucRet = EEM_AppendPayload(&pHeader, EEM_PAYLOAD_TYPE_EP_GPS_INFO, sizeof(EEM_EP_GPS_INFO_S), (void *) &stEemGpsInfo);
