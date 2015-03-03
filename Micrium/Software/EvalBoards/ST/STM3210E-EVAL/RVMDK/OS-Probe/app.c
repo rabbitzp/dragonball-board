@@ -123,7 +123,7 @@ static  void  App_EventCreate      (void);
 
 static  void  App_TaskStart        (void        *p_arg);
 static  void  App_TaskUserIF       (void        *p_arg);
-static  void  App_TaskKbd          (void        *p_arg);
+//static  void  App_TaskKbd          (void        *p_arg);
 
 static  void  App_DispScr_SignOn   (void);
 static  void  App_DispScr_TaskNames(void);
@@ -338,7 +338,8 @@ static  void  App_TaskCreate (void)
                              (INT32U          ) APP_TASK_USER_IF_STK_SIZE,
                              (void          * ) 0,
                              (INT16U          )(OS_TASK_OPT_STK_CLR | OS_TASK_OPT_STK_CHK));
-
+#if 0
+// jiaozi
 #if (OS_TASK_NAME_SIZE >= 9)
     OSTaskNameSet(APP_TASK_USER_IF_PRIO, "User I/F", &os_err);
 #endif
@@ -356,9 +357,11 @@ static  void  App_TaskCreate (void)
 #if (OS_TASK_NAME_SIZE >= 9)
     OSTaskNameSet(APP_TASK_KBD_PRIO, "Keyboard", &os_err);
 #endif
+#endif
 }
 
-
+#if 0
+// jiaozi
 /*
 *********************************************************************************************************
 *                                            App_TaskKbd()
@@ -406,7 +409,7 @@ static  void  App_TaskKbd (void *p_arg)
     }
 }
 
-
+#endif
 /*
 *********************************************************************************************************
 *                                            App_TaskUserIF()
@@ -433,7 +436,8 @@ static  void  App_TaskUserIF (void *p_arg)
     }
 }
 
-
+#if 0
+// jiaozi
 /*
 *********************************************************************************************************
 *                                          App_DispScr_SignOn()
@@ -674,7 +678,6 @@ static  void  App_InitProbe (void)
 }
 #endif
 
-
 /*
 *********************************************************************************************************
 *                                         AppProbeCallback()
@@ -798,7 +801,7 @@ static  void  App_FormatDec (CPU_INT08U *pstr, CPU_INT32U value, CPU_INT08U digi
     }
 }
 
-
+#endif
 /*
 *********************************************************************************************************
 *********************************************************************************************************

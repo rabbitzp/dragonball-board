@@ -31,6 +31,7 @@ typedef enum _tagEpType
     EP_TYPE_COOR    = 2,
 
     EP_TYPE_MAX,
+    EP_TYPE_INVALID,
     EP_TYPE_END = 0xFF,
 }EP_TYPE_E;
 

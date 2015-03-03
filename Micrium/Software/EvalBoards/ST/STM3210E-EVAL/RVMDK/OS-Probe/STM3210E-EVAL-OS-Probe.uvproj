@@ -345,7 +345,7 @@
               <MiscControls></MiscControls>
               <Define>OS_TYPE_UCOS</Define>
               <Undefine></Undefine>
-              <IncludePath>.;..\BSP;..\..\..\..\..\uCOS-II\Ports\arm-cortex-m3\Generic\RealView;..\..\..\..\..\uCOS-II\Source;..\..\..\..\..\CPU\ST\STM32\inc;..\..\..\..\..\uC-CPU;..\..\..\..\..\uC-CPU\Arm-Cortex-M3\RealView;..\..\..\..\..\uC-LIB;..\..\..\..\..\uC-Probe\Target\Plugins\uCOS-II;..\..\..\..\..\uC-Probe\Target\Communication\Generic\Source;..\..\..\..\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\ST\STM32;..\..\..\..\..\uC-Probe\Target\Communication\Generic\RS-232\Source;..\..\..\..\..\User\inc;..\..\..\..\..\User\eem;..\..\..\..\..\User\utility;..\..\..\..\..\uCGUI\Config;..\..\..\..\..\uCGUI\GUIDemo;..\..\..\..\..\uCGUI\LCDDriver;..\..\..\..\..\uCGUI\GUI\AntiAlias;..\..\..\..\..\uCGUI\GUI\ConvertColor;..\..\..\..\..\uCGUI\GUI\ConvertMono;..\..\..\..\..\uCGUI\GUI\Core;..\..\..\..\..\uCGUI\GUI\Font;..\..\..\..\..\uCGUI\GUI\LCDDriver;..\..\..\..\..\uCGUI\GUI\MemDev;..\..\..\..\..\uCGUI\GUI\MultiLayer;..\..\..\..\..\uCGUI\GUI\Widget;..\..\..\..\..\uCGUI\GUI\WM;..\..\..\..\..\uCGUI\User;..\..\..\..\..\uCGUI\User\Res</IncludePath>
+              <IncludePath>.;..\BSP;..\..\..\..\..\uCOS-II\Ports\arm-cortex-m3\Generic\RealView;..\..\..\..\..\uCOS-II\Source;..\..\..\..\..\CPU\ST\STM32\inc;..\..\..\..\..\uC-CPU;..\..\..\..\..\uC-CPU\Arm-Cortex-M3\RealView;..\..\..\..\..\uC-LIB;..\..\..\..\..\uC-Probe\Target\Plugins\uCOS-II;..\..\..\..\..\uC-Probe\Target\Communication\Generic\Source;..\..\..\..\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\ST\STM32;..\..\..\..\..\uC-Probe\Target\Communication\Generic\RS-232\Source;..\..\..\..\..\User\inc;..\..\..\..\..\User\eem;..\..\..\..\..\User\utility;..\..\..\..\..\User\lib\nmealibLite\include;..\..\..\..\..\uCGUI\Config;..\..\..\..\..\uCGUI\GUIDemo;..\..\..\..\..\uCGUI\LCDDriver;..\..\..\..\..\uCGUI\GUI\AntiAlias;..\..\..\..\..\uCGUI\GUI\ConvertColor;..\..\..\..\..\uCGUI\GUI\ConvertMono;..\..\..\..\..\uCGUI\GUI\Core;..\..\..\..\..\uCGUI\GUI\Font;..\..\..\..\..\uCGUI\GUI\LCDDriver;..\..\..\..\..\uCGUI\GUI\MemDev;..\..\..\..\..\uCGUI\GUI\MultiLayer;..\..\..\..\..\uCGUI\GUI\Widget;..\..\..\..\..\uCGUI\GUI\WM;..\..\..\..\..\uCGUI\User;..\..\..\..\..\uCGUI\User\Res</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -934,6 +934,16 @@
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\User\user_ep_manage.c</FilePath>
             </File>
+            <File>
+              <FileName>user_os_func.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\User\user_os_func.c</FilePath>
+            </File>
+            <File>
+              <FileName>user_task_GPS.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\User\user_task_GPS.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -943,6 +953,16 @@
               <FileName>dlist.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\User\utility\dlist.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>User/Lib/nmea</GroupName>
+          <Files>
+            <File>
+              <FileName>nmea_parser.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\User\lib\nmealibLite\src\nmea_parser.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -4563,6 +4583,11 @@
               <FileName>GUI_WndMain.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\uCGUI\User\GUI_WndMain.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_WndRadar.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\uCGUI\User\GUI_WndRadar.c</FilePath>
             </File>
           </Files>
         </Group>

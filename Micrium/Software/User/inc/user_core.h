@@ -20,10 +20,14 @@
 #define DEFAULT_USER_TASK_UART_RECV_PRIO        13
 #define DEFAULT_USER_TASK_UART_PROCESS_PRIO     14
 #define DEFAULT_USER_TASK_HMC_PRIO              15
+#define DEFAULT_USER_TASK_GPS_RECV_PRIO         16
+#define DEFAULT_USER_TASK_GPS_PROCESS_PRIO      17
+
 
 #define DEFAULT_USER_KEY_STK_SIZE               64
 #define DEFAULT_USER_UART_STK_SIZE              64
 #define DEFAULT_USER_HMC_STK_SIZE               64
+#define DEFAULT_USER_GPS_RECV_STK_SIZE          128
 
 #define UCORE_MAX_MESSAGE_BUFF_LEN              (1024)                  /* max 1k dynic buff size */
 
@@ -52,7 +56,8 @@ typedef enum _tagUCMsgType
     UCORE_MESSAGE_TYPE_COOR_STATCHAG    = 100,
     UCORE_MESSAGE_TYPE_EP_ONLINE        = 101,
     UCORE_MESSAGE_TYPE_EP_OFFLINE       = 102,
-
+    UCORE_MESSAGE_TYPE_QUERY_EPINFO     = 103,
+    UCORE_MESSAGE_TYPE_REPORT_GPS       = 104,
 
     /* 200 - 1000 for user*/
     UCORE_MESSAGE_TYPE_TRANS_COM        = 200,

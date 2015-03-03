@@ -17,6 +17,8 @@
 #include <dlist.h>
 #include <user_ep_manage.h>
 
+EP_INFO_S   g_stMyEpInfo = {0};
+
 /*--------------local global vars declare here-----------------------------*/
 static DOUBLE_LINK_NODE *g_pEpDlistHead     = NULL;
 static OS_EVENT         *g_QSemListGuard    = NULL;
@@ -58,6 +60,9 @@ void dlist_Print(void *pdata)
 u8 UEM_Init(void)
 {
 	EP_INFO_S *pEp = NULL;
+
+    /* init my ep */
+    g_stMyEpInfo.ucEpType = EP_TYPE_INVALID;
 
     /* create sem */
     g_QSemListGuard = OSSemCreate(1);

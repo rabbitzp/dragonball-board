@@ -34,10 +34,15 @@
 *                                       MODULE ENABLE / DISABLE
 *********************************************************************************************************
 */
+#if 0
+// jiaozi
+#define  APP_OS_PROBE_EN                         DEF_DISABLED
+#define  APP_PROBE_COM_EN                        DEF_DISABLED
 
+#else
 #define  APP_OS_PROBE_EN                         DEF_ENABLED
 #define  APP_PROBE_COM_EN                        DEF_ENABLED
-
+#endif
 /*
 *********************************************************************************************************
 *                                              TASKS NAMES

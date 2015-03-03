@@ -117,9 +117,9 @@ EEM_HEADER_S *EEM_CreateRespHeader(EEM_HEADER_S *ReqHeader, u8 result)
 
     /* init header */
     pHeader->ucMagic        = 0xFE;                     /* magic word, fixed to 0xFE */
-    pHeader->ucEpId         = ReqHeader->ucEpId;                     /* end point id, coordinator is 0 */
-    pHeader->usCommand      = ReqHeader->usCommand + 1;                  /* ref to >EEM_COMMAND_E< */
-    pHeader->usSeq          = ReqHeader->usSeq;        /* from 1, recircle */
+    pHeader->ucEpId         = ReqHeader->ucEpId;        /* end point id, coordinator is 0 */
+    pHeader->usCommand      = ReqHeader->usCommand;     /* ref to >EEM_COMMAND_E< */
+    pHeader->usSeq          = ReqHeader->usSeq;         /* from 1, recircle */
     pHeader->usPayloadLen   = 0;                        /* data len, not include header */
     pHeader->ucResult       = result;                   /* ref to >UCORE_ERROR_E< */  
     pHeader->ucRev[0]       = 0;

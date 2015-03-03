@@ -36,8 +36,9 @@ extern "C" {     /* Make sure we have C-declarations in C++ programs */
 #define GUI_USER_TINY  ((LCD_XSIZE <  140) || (LCD_YSIZE <  100))
 
 /* here define user message */
-#define GUI_USER_MSG_GETFOCUS    WM_USER + 0
-#define GUI_USER_MSG_LOSFOCUSED  WM_USER + 1
+#define GUI_USER_MSG_GETFOCUS           WM_USER + 0
+#define GUI_USER_MSG_LOSFOCUSED         WM_USER + 1
+#define GUI_USER_MSG_GPS_UPDATE         WM_USER + 2
 
 #if defined(__cplusplus)
   }

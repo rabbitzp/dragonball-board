@@ -12,20 +12,26 @@
 * Programmer(s) : JohnniBlack
 *********************************************************************************************************
 */
-
+#include <math.h>
 #include <includes.h>
 #include <user_core.h>
 #include <user_ep_manage.h>
 #include <user_task_key.h>
 #include <user_task_hmc.h>
 #include <user_task_uart.h>
+#include <user_task_gps.h>
+#include <user_os_func.h>
 #include <eem.h>
 #include <eem_struct.h>
+#include "GUI_WndDef.h"  /* valid LCD configuration */
+#include "GUI_WndMain.h"
+#include "nmea_parser.h"
 
 #define DEFAULT_USER_TASK_PRIO              5  //优先级高
 #define DEFAULT_USER_STK_SIZE               128
 #define MAX_USER_CORE_MSG_SIZE              16
 
+extern EP_INFO_S g_stMyEpInfo;
 
 /*----------------local global vars declare here---------------------*/
 OS_STK      g_UserCoreSTK[DEFAULT_USER_STK_SIZE];
@@ -83,6 +89,12 @@ void UCore_TaskProc(void *p_arg)
     if (UCORE_ERR_SUCCESS != ucResult)
     {
         printf("Start user uart task failed.\r\n");
+    }    
+
+    ucResult = GPS_Start();
+    if (UCORE_ERR_SUCCESS != ucResult)
+    {
+        printf("Start user gps task failed.\r\n");
     }     
 
     /* enter event loop */
@@ -114,6 +126,21 @@ void UCore_EventLoop(void)
         {
             switch (pMsg->usMsgType)
             {
+                case UCORE_MESSAGE_TYPE_QUERY_EPINFO:
+                    {
+                        EP_INFO_S    *pEpInfo   = NULL;
+                        
+                        /* get ep info */
+                        pEpInfo = (EP_INFO_S *) pMsg->pBuf;
+                        if (NULL != pEpInfo)
+                        {
+                            /* yes, i'm ready! */                        
+                            memcpy(&g_stMyEpInfo, pEpInfo, sizeof(EP_INFO_S));
+
+                            printf("My ep info:id:%d type:%d addr:%x name:%s\r\n", g_stMyEpInfo.ucEpId, g_stMyEpInfo.ucEpType, g_stMyEpInfo.usEpAddr, g_stMyEpInfo.sEpName);
+                        }
+                    }
+                    break;
                 case UCORE_MESSAGE_TYPE_COOR_STATCHAG:
                     {
                         printf("Coordinator state change.\r\n");
@@ -121,7 +148,6 @@ void UCore_EventLoop(void)
                     break;
                 case UCORE_MESSAGE_TYPE_EP_ONLINE:
                     {
-                        u16          i          = 0;
                         u8           ucRet      = 0;
                         u16          usTotalLen = 0;  
                         u8           *pcBuff    = NULL;
@@ -190,14 +216,7 @@ void UCore_EventLoop(void)
                     	pcBuff = EEM_GetBuff(pHeader, &usTotalLen);
                         if (NULL != pcBuff)
                         {
-                            for (i=0; i<usTotalLen; i++)
-                            {
-                                /* send to uart */
-                                USART_SendData(USART2, pcBuff[i]);
-
-                                /* Loop until the end of transmission */
-                                while(USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);
-                            }
+                            USART_Send(USART2, usTotalLen, (void *) pcBuff);
                         }
 
                         /* dump message */
@@ -214,6 +233,37 @@ void UCore_EventLoop(void)
                         for (i=0; i<pMsg->usBufLen; i++)
                             printf("%02X ", pcBuff[i]);
                         printf("\r\n");
+                    }
+                    break;
+                case UCORE_MESSAGE_TYPE_REPORT_GPS:
+                    {
+                        EEM_EP_GPS_INFO_S   *pGpsInfo = NULL;
+                        
+                        /* get ep gps info */
+                        pGpsInfo = (EEM_EP_GPS_INFO_S *) pMsg->pBuf;
+                        if (NULL != pGpsInfo)
+                        {
+                            /* 送到显示模块去 */
+                            WM_MESSAGE  stUiMessage = {0};
+                            nmeaINFO    stNemaInfo = {0};
+                            
+                            stNemaInfo.id = pGpsInfo->epid;
+                        	stNemaInfo.status = pGpsInfo->status;			/**< Status (A = active or V = void) */
+                        	stNemaInfo.ns = pGpsInfo->ns;				    /**< [N]orth or [S]outh */
+                        	stNemaInfo.ew = pGpsInfo->ew;				    /**< [E]ast or [W]est */
+                        	stNemaInfo.lat = pGpsInfo->lat;	                /**< Latitude in NDEG - [degree][min].[sec/60] */
+                        	stNemaInfo.lon = pGpsInfo->lon;	                /**< Longitude in NDEG - [degree][min].[sec/60] */
+                        	stNemaInfo.speed = pGpsInfo->speed;	            /**< Speed over the ground in knots */    
+                            stNemaInfo.course = pGpsInfo->course;           /**< direction, 000.0~359.9, base N */
+                            
+                            stUiMessage.MsgId  = GUI_USER_MSG_GPS_UPDATE;   
+                            stUiMessage.Data.p = (void *) &stNemaInfo;
+
+                            /* send to radar window */
+                            WM_SendMessage(GUI_GetCurrentWnd(), &stUiMessage);
+
+                            printf("recv gps info lon:%.5f lat:%.5f\r\n", stNemaInfo.lon, stNemaInfo.lat);
+                        }                        
                     }
                     break;
                 case UCORE_MESSAGE_TYPE_TEST1:

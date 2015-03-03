@@ -31,6 +31,8 @@ typedef enum _tagEEMCommand
     EEM_COMMAND_COOR_STATCHAG   = 100,
     EEM_COMMAND_EP_ONLINE       = 101,
     EEM_COMMAND_EP_OFFLINE      = 102,
+    EEM_COMMAND_QUERY_EPINFO    = 103,
+    EEM_COMMAND_REPORT_GPS      = 104,
 
     /* user command from 500 */
     EEM_COMMAND_TRANS_COM       = 500,
@@ -43,11 +45,12 @@ typedef enum _tagEEMCommand
 typedef enum _tagEEMPalyloadType
 {
     /* FROM 1, 0 NOT USED! */
-    EEM_PAYLOAD_TYPE_RAW_DATA = 1,    
-    EEM_PAYLOAD_TYPE_EP_ID    = 2,
-    EEM_PAYLOAD_TYPE_EP_TYPE  = 3,    
-    EEM_PAYLOAD_TYPE_EP_ADDR  = 4,
-    EEM_PAYLOAD_TYPE_EP_INFO  = 5,
+    EEM_PAYLOAD_TYPE_RAW_DATA       = 1,    
+    EEM_PAYLOAD_TYPE_EP_ID          = 2,
+    EEM_PAYLOAD_TYPE_EP_TYPE        = 3,    
+    EEM_PAYLOAD_TYPE_EP_ADDR        = 4,
+    EEM_PAYLOAD_TYPE_EP_INFO        = 5,
+    EEM_PAYLOAD_TYPE_EP_GPS_INFO    = 6,
 
     EEM_PAYLOAD_TYPE_MAX,
     

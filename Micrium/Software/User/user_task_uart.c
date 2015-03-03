@@ -18,10 +18,11 @@
 #include "GUI_WndDef.h"  /* valid LCD configuration */
 #include <eem.h>
 #include <eem_struct.h>
+#include <user_os_func.h>
 #include <user_ep_manage.h>
 
 /*----------------macros declare here---------------------*/
-#define             MAX_UART_RECV_MSG_BUFF_SIZE              255
+#define             MAX_UART_RECV_MSG_BUFF_SIZE              63
 
 /*---------------- global vars declare here---------------------*/
 OS_EVENT            *g_QSemUart2MsgRecv = NULL;
@@ -84,18 +85,45 @@ void UUart_TaskRecvProc(void *p_arg)
 
 void UUart_Init(void)
 {
+    u16          usTotalLen = 0; 
+    EEM_HEADER_S *pHeader   = NULL;
+    u8           *pcBuff    = NULL;
+    
     g_QSemUart2MsgRecv = OSQCreate(&g_ucUart2RxdBuff[0], MAX_UART_RECV_MSG_BUFF_SIZE);
     if (NULL == g_QSemUart2MsgRecv)
     {
         printf("Create g_OSemBuffRwEvent failed.\r\n");
+        return;
     }
 
     g_OSemBuffRwEvent = OSSemCreate(1);
     if (NULL == g_OSemBuffRwEvent)
     {
         printf("Create g_OSemBuffRwEvent failed.\r\n");
+        return;
     }
 
+    /* query ep basic info */
+	pHeader = EEM_CreateHeader(0, EEM_COMMAND_QUERY_EPINFO, UCORE_ERR_SUCCESS);
+	if (NULL == pHeader)
+	{
+	    printf("EEM CreateHeader failed.\r\n");
+        return;
+    }
+
+    /* get buff */
+	pcBuff = EEM_GetBuff(pHeader, &usTotalLen);
+    if (NULL != pcBuff)
+    {
+        USART_Send(USART2, usTotalLen, (void *) pcBuff);
+    }
+
+    /* dump message */
+    EEM_DumpMessage(pHeader);
+
+    /* clean buffer */
+    EEM_Delete((void **) &pHeader);
+            
     printf("User task uart init finished.\r\n");
 }
 
@@ -144,6 +172,51 @@ void UUart_TaskProcessProc(void *p_arg)
     			{
     			    switch (pHeader->usCommand)
                     {
+                        case EEM_COMMAND_QUERY_EPINFO:
+                            {
+                                u16             usPayLen  = 0;
+                                EEM_EP_INFO_S   *pPayload = NULL;
+                                EP_INFO_S       *pEpInfo  = NULL;
+                                
+                                /* here get message payload */
+                                pPayload = (EEM_EP_INFO_S *) EEM_GetPayload(pHeader, EEM_PAYLOAD_TYPE_EP_INFO, &usPayLen);
+                                if (NULL != pPayload) /* must not be null */
+                                {
+                                    /* alloc buff */
+                                    pEpInfo = (EP_INFO_S *) malloc(sizeof(EP_INFO_S));
+                                    if (NULL != pEpInfo)
+                                    {
+                                        /* clear buffer */
+                                        memset(pEpInfo, 0, sizeof(EP_INFO_S));
+
+                                        /* asign values */
+                                    	pEpInfo->ucEpId     = pHeader->ucEpId;
+                                        pEpInfo->ucEpType   = pPayload->ucEpType;
+                                        pEpInfo->usEpAddr   = pPayload->usEpAddr;    
+
+                                        if (EP_TYPE_EP == pEpInfo->ucEpType)
+                                            strncpy((char *) pEpInfo->sEpName, "EP", MAX_EP_NAME_LEN - 1);
+                                        else if (EP_TYPE_ROUTER == pEpInfo->ucEpType)
+                                            strncpy((char *) pEpInfo->sEpName, "Router", MAX_EP_NAME_LEN - 1);
+                                        else
+                                            strncpy((char *) pEpInfo->sEpName, "Coord", MAX_EP_NAME_LEN - 1);
+
+                                        /* ok, finnally send a message to core */
+                                        ucResult = UCore_PostMessage1(UCORE_MESSAGE_TYPE_QUERY_EPINFO, sizeof(EP_INFO_S), (void *)pEpInfo);
+
+                                        /* free buff first */                                        
+                                        free((void *)pEpInfo);
+                                        pEpInfo = NULL;
+
+                                        /* check result */                                        
+                                        if (UCORE_ERR_SUCCESS != ucResult)
+                                        {
+                                            printf("Send Ep[%d] query ep info message Failed.\r\n", pHeader->ucEpId);
+                                        }
+                                    }
+                                }
+                            }
+                            break;
                         case EEM_COMMAND_COOR_STATCHAG:
                             {   
                                 ucResult = UCore_PostMessage1(UCORE_MESSAGE_TYPE_COOR_STATCHAG, 0, NULL);
@@ -214,6 +287,32 @@ void UUart_TaskProcessProc(void *p_arg)
                                     if (UCORE_ERR_SUCCESS != ucResult)
                                     {
                                         printf("Send Ep[%d] trans com message Failed.\r\n", pHeader->ucEpId);
+                                    }
+                                }
+                            }
+                            break;
+                        case EEM_COMMAND_REPORT_GPS:
+                            {
+                                u16                 usPayLen   = 0;
+                                EEM_EP_GPS_INFO_S   *pGpsInfo = NULL;
+                                
+                                /* here get message payload */
+                                pGpsInfo = (EEM_EP_GPS_INFO_S *) EEM_GetPayload(pHeader, EEM_PAYLOAD_TYPE_EP_GPS_INFO, &usPayLen);
+                                if (NULL != pGpsInfo) /* must not be null */
+                                {
+                                    /* check ep id */
+                                    if (pHeader->ucEpId != pGpsInfo->epid)
+                                    {
+                                        printf("Check ep invalid, header:%d info:%d bring to same!\r\n", pHeader->ucEpId, pGpsInfo->epid);
+
+                                        pGpsInfo->epid = pHeader->ucEpId;
+                                    }
+                                    
+                                    /* ok, send a message to core */
+                                    ucResult = UCore_PostMessage1(UCORE_MESSAGE_TYPE_REPORT_GPS, usPayLen, (void *) pGpsInfo);
+                                    if (UCORE_ERR_SUCCESS != ucResult)
+                                    {
+                                        printf("Send Ep[%d] report GPS message Failed.\r\n", pHeader->ucEpId);
                                     }
                                 }                                
                             }

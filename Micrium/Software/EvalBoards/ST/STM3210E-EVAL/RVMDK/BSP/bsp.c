@@ -37,7 +37,10 @@
 #include <fsmc_nand.h>
 
 /* include user define headers */
+#include <string.h>
 #include <user_task_uart.h>
+#include <user_task_gps.h>
+#include "nmea_parser.h"
 
 
 /*
@@ -107,7 +110,7 @@
 *                                           LOCAL CONSTANTS
 *********************************************************************************************************
 */
-
+#define MAX_GPS_RECV_MSG_BUFF_SIZE              255
 
 /*
 *********************************************************************************************************
@@ -128,7 +131,8 @@
 *                                       LOCAL GLOBAL VARIABLES
 *********************************************************************************************************
 */
-
+static vu8  g_SBUF_GPSRXArray[MAX_GPS_RECV_MSG_BUFF_SIZE];
+static vu8  g_GPSArryPos = 0;
 
 /*
 *********************************************************************************************************
@@ -165,7 +169,12 @@ static vu8 print = print_USART;
 static vu8 print_x = 40;
 static vu8 print_y = 40;
 
-#pragma import(__use_no_semihosting)             
+#pragma import(__use_no_semihosting)      
+//void _ttywrch(int ch)  
+//{ 
+//    while((USART1->SR&0X40)==0);//循环发送,直到发送完毕    
+//    USART1->DR = (u8) ch;  
+//}
 //标准库需要的支持函数                 
 struct __FILE 
 { 
@@ -357,6 +366,128 @@ void db_stm2cc2530_init(u32 bound)
 	printf("\n%s\n", __FUNCTION__);
 	
 }
+
+void USART3_IRQHandler(void)
+{
+    OS_CPU_SR   cpu_sr;
+    u8          ch;
+    nmeaGPRMC   *pInfo      = NULL;    
+    nmeaINFO    *pnmeaInfo  = NULL;
+
+    OS_ENTER_CRITICAL();                         /* Tell uC/OS-II that we are starting an ISR          */
+    OSIntNesting++;
+    OS_EXIT_CRITICAL();
+    
+	if (USART_GetITStatus(USART3, USART_IT_RXNE) != RESET)  //接收到数据
+	{
+        USART_ClearFlag(USART3, USART_IT_RXNE);
+
+        ch = USART_ReceiveData(USART3);	//读取接收到的数据
+        
+        if (g_GPSArryPos >= MAX_GPS_RECV_MSG_BUFF_SIZE)
+        {
+            g_GPSArryPos = 0;
+        }
+
+        /* check gps '$' */
+        if ('$' == ch)
+        {
+            g_GPSArryPos = 0;
+        }
+        else
+        {
+            g_GPSArryPos++;
+        }
+
+        /* append buffer */
+        g_SBUF_GPSRXArray[g_GPSArryPos] = ch;
+
+        /* check end '\r' */
+        if ('\n' == ch)
+        {
+            g_SBUF_GPSRXArray[++g_GPSArryPos] = 0;
+            
+            /* prepare buff */
+            pInfo = (nmeaGPRMC *) malloc(sizeof(nmeaGPRMC));
+            memset(pInfo, 0, sizeof(nmeaGPRMC));
+            
+            /* parse info */
+        	if (0 == nmea_parse((char *) g_SBUF_GPSRXArray, g_GPSArryPos, pInfo))
+        	{
+                pnmeaInfo = (nmeaINFO *) malloc(sizeof(nmeaINFO));
+                memset(pnmeaInfo, 0, sizeof(nmeaINFO));
+
+                /* asign values */
+                memcpy(&pnmeaInfo->utc, &pInfo->utc, sizeof(nmeaTIME));                 /**< UTC time */
+            	pnmeaInfo->status = pInfo->status;			                            /**< Status (A = active or V = void) */
+            	pnmeaInfo->ns = pInfo->ns;				                                /**< [N]orth or [S]outh */
+            	pnmeaInfo->ew = pInfo->ew;				                                /**< [E]ast or [W]est */
+            	pnmeaInfo->lat = atof((char *) pInfo->lat);	                            /**< Latitude in NDEG - [degree][min].[sec/60] */
+            	pnmeaInfo->lon = atof((char *) pInfo->lon);	                            /**< Longitude in NDEG - [degree][min].[sec/60] */
+            	pnmeaInfo->speed = atof((char *) pInfo->speed) * NMEA_TUD_KNOTS;	    /**< Speed over the ground in knots */    
+                pnmeaInfo->course = atof((char *) pInfo->course);                       /**< direction, 000.0~359.9, base N */
+
+        		/* trans to degree */
+    	    	pnmeaInfo->lat = (double)((int)pnmeaInfo->lat / 100) + (double)(pnmeaInfo->lat - ((int)pnmeaInfo->lat / 100) * 100) / 60.00;
+		        pnmeaInfo->lon = (double)((int)pnmeaInfo->lon / 100) + (double)(pnmeaInfo->lon - ((int)pnmeaInfo->lon / 100) * 100) / 60.00;
+
+                /* pass to up level process */
+                OSQPost(g_QSemGPSMsgRecv, (void *) pnmeaInfo);
+        	}
+
+            /* clean buff */
+            free(pInfo);            
+        }        		
+	}
+
+    OSIntExit();                                 /* Tell uC/OS-II that we are leaving the ISR          */
+    
+	return;
+}
+
+void db_gps_init(u32 bound)
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
+	USART_InitTypeDef USART_InitStructure;
+
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3 ,ENABLE);
+    
+	USART_DeInit(USART3);  //复位串口3
+	
+	//USART3_TX   PB.10
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;	//复用推挽输出
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+   
+	//USART3_RX	  PB.11
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;//浮空输入
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+  
+	//USART 初始化设置
+	USART_InitStructure.USART_BaudRate = bound;	//设置波特率，一般设置为9600;
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;	//字长为8位数据格式
+	USART_InitStructure.USART_StopBits = USART_StopBits_1;	//一个停止位
+	USART_InitStructure.USART_Parity = USART_Parity_No;	//无奇偶校验位
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;	//无硬件数据流控制
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//收发模式
+	
+	USART_Init(USART3, &USART_InitStructure); //初始化串口
+		
+	USART3->CR1 |= 1 << 8;	//PE中断使能
+	USART3->CR1 |= 1 << 5;	//接收缓冲区非空中断使能
+
+	BSP_IntVectSet(BSP_INT_ID_USART3, USART3_IRQHandler);
+	BSP_IntPrioSet(BSP_INT_ID_USART3, 2);
+	BSP_IntEn(BSP_INT_ID_USART3);
+	
+	USART_Cmd(USART3, ENABLE);                    //使能串口
+
+	printf("\n%s\n", __FUNCTION__);
+	
+}
 #endif
 
 void  BSP_Init (void)
@@ -415,6 +546,9 @@ void  BSP_Init_post (void)
 
     /* init uart2 for cc2530 */
     db_stm2cc2530_init(9600);
+
+    /* init gps uart3 */
+    db_gps_init(9600);
 
     /* init nand flash */
     db_nand_init();

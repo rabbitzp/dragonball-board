@@ -1,20 +1,20 @@
 /*
 *********************************************************************************************************
 *
-*                                      User core processor
+*                                      GUI for gps radar
 *
 *                                            J.B.S
 *                                            with the
 *                                       DragonBall Project
 *
-* Filename      : GUI_WndMain.h
+* Filename      : GUI_WndRadar.h
 * Version       : V1.00
 * Programmer(s) : JohnniBlack
 *********************************************************************************************************
 */
 
-#ifndef __GUI_WND_MAIN_H__
-#define __GUI_WND_MAIN_H__
+#ifndef __GUI_WND_RADAR_H__
+#define __GUI_WND_RADAR_H__
 
 #include "GUI_WndDef.h"  /* valid LCD configuration */
 
@@ -36,12 +36,11 @@ extern "C" {     /* Make sure we have C-declarations in C++ programs */
 *
 *********************************************************************
 */
-void        GUI_WndMainCreate(void);
-WM_HWIN     GUI_GetCurrentWnd(void);
+void GUI_WndRadarCreate(WM_HWIN *pCurrent);
+void GUI_WndRadarDestroy(void);
 
 #if defined(__cplusplus)
   }
 #endif
 
 #endif
-
