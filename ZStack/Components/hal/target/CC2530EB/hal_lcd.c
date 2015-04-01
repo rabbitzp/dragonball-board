@@ -37,6 +37,8 @@
 #define LCD_MAX_BUF        25
 #define HAL_LCD_MAX_CHARS  16   // Max number of chars on a single LCD line 
 
+char    gsLCDWriteBuf[32] = {0};
+
 
 const unsigned char F8X16[]=	  
 {
@@ -436,6 +438,7 @@ void LcdClearLine(unsigned char y, unsigned char count)
 
 void HalLcdWriteString (char *str, uint8 option)
 {
+#if (HAL_LCD == TRUE)
   uint8 x=0,y=0,strLen;
   uint8 lcdBuf[HAL_LCD_MAX_CHARS+1];
     
@@ -452,6 +455,7 @@ void HalLcdWriteString (char *str, uint8 option)
   
   LcdClearLine(y, 2);
   LCD_P8x16Str(x, y, lcdBuf);
+#endif /* HAL_LCD */  
 }
 
 /***能描述：显示8*16一组标准ASCII字符串     显示的坐标（x,y），y为页范围0～7***/

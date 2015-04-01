@@ -66,6 +66,7 @@ u16 CalCRC(EEM_HEADER_S *header)
     return usCRC;
 }
 
+/* be carefully using, this function will asign buffer */
 EEM_HEADER_S *EEM_CreateHeader(u8 EpId, u16 Command, u8 result)
 {
     EEM_HEADER_S *pHeader = NULL;
@@ -90,14 +91,14 @@ EEM_HEADER_S *EEM_CreateHeader(u8 EpId, u16 Command, u8 result)
     pHeader->usSeq          = g_usEEMSequence++;        /* from 1, recircle */
     pHeader->usPayloadLen   = 0;                        /* data len, not include header */
     pHeader->ucResult       = result;                   /* ref to >UCORE_ERROR_E< */  
-    pHeader->ucRev[0]       = 0;
-    pHeader->ucRev[1]       = 0;
-    pHeader->ucRev[2]       = 0;    
+    pHeader->usTransId      = 0;
+    pHeader->ucSPara        = 0;
 
     /* return header */
     return pHeader;
 }
 
+/* be carefully using, this function will asign buffer */
 EEM_HEADER_S *EEM_CreateRespHeader(EEM_HEADER_S *ReqHeader, u8 result)
 {
     EEM_HEADER_S *pHeader = NULL;
@@ -122,14 +123,14 @@ EEM_HEADER_S *EEM_CreateRespHeader(EEM_HEADER_S *ReqHeader, u8 result)
     pHeader->usSeq          = ReqHeader->usSeq;         /* from 1, recircle */
     pHeader->usPayloadLen   = 0;                        /* data len, not include header */
     pHeader->ucResult       = result;                   /* ref to >UCORE_ERROR_E< */  
-    pHeader->ucRev[0]       = 0;
-    pHeader->ucRev[1]       = 0;
-    pHeader->ucRev[2]       = 0;    
+    pHeader->usTransId      = 0;
+    pHeader->ucSPara        = 0;
 
     /* return header */
     return pHeader;    
 }
 
+/* be carefully using, this function will asign buffer */
 u8 EEM_CreateBody(EEM_HEADER_S **ppHeader, u16 len, void *data)
 {
     u16             usTotalLen = 0;
@@ -189,6 +190,7 @@ u8 EEM_GetBody(EEM_HEADER_S *Header, u16 *len, void **data)
     return UCORE_ERR_SUCCESS;
 }
 
+/* be carefully using, this function will asign buffer */
 u8 EEM_AppendPayload(EEM_HEADER_S **ppHeader, u16 PayloadType, u16 PayloadLen, void *data)
 {
     u16             usTotalLen      = 0;
@@ -309,7 +311,8 @@ u8 *EEM_GetBuff(EEM_HEADER_S *Header, u16 *len)
     return (u8 *)Header;
 }
 
-u8 EEM_GetMessage(u8 *Buff, u8 *BufSize, EEM_HEADER_S **ppHeader)
+/* be carefully using, this function will asign buffer to ppHeader */
+u8 EEM_GetMessage(u8 *Buff, u32 *BufSize, EEM_HEADER_S **ppHeader)
 {
     u8              i           = 0;
     u8              ucStartPos  = 0;
@@ -449,12 +452,12 @@ void EEM_DumpMessage(EEM_HEADER_S *Header)
 
     pchar = (u8 *) Header;
     usTotalLen = sizeof(EEM_HEADER_S) + Header->usPayloadLen + 2;
-    printf("Dump Message:\r\n");
+    UCORE_DEBUG_PRINT("Dump Message:\r\n");
     for (i = 0; i < usTotalLen; i++)
     {
-        printf("%02X ", pchar[i]);
+        UCORE_DEBUG_PRINT("%02X ", pchar[i]);
     }
-    printf("\r\n");
+    UCORE_DEBUG_PRINT("\r\n");
 }
 
 #if defined(__cplusplus)

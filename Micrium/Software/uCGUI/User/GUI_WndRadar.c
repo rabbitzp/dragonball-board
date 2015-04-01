@@ -225,7 +225,14 @@ void GUI_WndRadarCreate(WM_HWIN *pCurrent)
 {
     INT8U err = 0;
 
-    #if 0
+#if 0
+    /* for test */
+    g_stArryGPSInfo[0].course = 30;
+    g_stArryGPSInfo[0].id = 0;
+    g_stArryGPSInfo[0].lat = 30.32965;
+    g_stArryGPSInfo[0].lon = 120.13516;
+    g_stArryGPSInfo[0].status = 'A';
+    
     /* for test */
     g_stArryGPSInfo[1].course = 30;
     g_stArryGPSInfo[1].id = 1;
@@ -269,7 +276,7 @@ void GUI_WndRadarCreate(WM_HWIN *pCurrent)
     g_stArryGPSInfo[7].lat = 30.3284748003;
     g_stArryGPSInfo[7].lon = 120.1391011456;
     g_stArryGPSInfo[7].status = 'A';   
-    #endif
+#endif
     
     /* Create radar wnd */
     g_hWndRadar = WM_CreateWindow( 0, 0, 220, 220, WM_CF_SHOW | WM_CF_MEMDEV, _cbWndRadar, 0);

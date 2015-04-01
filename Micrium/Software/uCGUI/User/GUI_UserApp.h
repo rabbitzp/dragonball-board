@@ -38,6 +38,8 @@ extern "C" {     /* Make sure we have C-declarations in C++ programs */
 */
 void GUI_UserAppStart(void);
 
+void MainTask(void);
+
 #if defined(__cplusplus)
   }
 #endif

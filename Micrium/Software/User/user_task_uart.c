@@ -15,7 +15,6 @@
 #include <includes.h>
 #include <user_core.h>
 #include <user_task_uart.h>
-#include "GUI_WndDef.h"  /* valid LCD configuration */
 #include <eem.h>
 #include <eem_struct.h>
 #include <user_os_func.h>
@@ -35,7 +34,7 @@ static OS_STK       g_UserTaskUartProcessSTK[DEFAULT_USER_UART_STK_SIZE];
 static void         *g_ucUart2RxdBuff[MAX_UART_RECV_MSG_BUFF_SIZE];
 
 static u8           g_ucUart2RXArray[MAX_UART_RECV_MSG_BUFF_SIZE];
-static u8           g_ucUartBuffPos = 0;
+static u32          g_ulUartBuffPos = 0;
 static OS_EVENT     *g_OSemBuffRwEvent;
 
 /*----------------local global funcs declare here---------------------*/
@@ -51,7 +50,7 @@ u8 UUart_Start(void)
 {
     u8          ucResult    = UCORE_ERR_COMMON_FAILED;
 
-    printf("starting user task uart...\r\n");
+    UCORE_DEBUG_PRINT("starting user task uart...\r\n");
 
     /* call init first */
     UUart_Init();    
@@ -59,14 +58,14 @@ u8 UUart_Start(void)
     ucResult = OSTaskCreate(UUart_TaskRecvProc, (void *)0, (OS_STK *)&g_UserTaskUartRecvSTK[DEFAULT_USER_UART_STK_SIZE - 1], DEFAULT_USER_TASK_UART_RECV_PRIO);
     if (OS_ERR_NONE != ucResult)
     {
-        printf("User task uart receive create Failed, value:%d.\r\n", ucResult);
+        UCORE_DEBUG_PRINT("User task uart receive create Failed, value:%d.\r\n", ucResult);
         return UCORE_ERR_CREATE_TASK_FAILED;
     }  
 
     ucResult = OSTaskCreate(UUart_TaskProcessProc, (void *)0, (OS_STK *)&g_UserTaskUartProcessSTK[DEFAULT_USER_UART_STK_SIZE - 1], DEFAULT_USER_TASK_UART_PROCESS_PRIO);
     if (OS_ERR_NONE != ucResult)
     {
-        printf("User task uart process create Failed, value:%d.\r\n", ucResult);
+        UCORE_DEBUG_PRINT("User task uart process create Failed, value:%d.\r\n", ucResult);
         return UCORE_ERR_CREATE_TASK_FAILED;
     }     
    
@@ -75,56 +74,31 @@ u8 UUart_Start(void)
 
 void UUart_TaskRecvProc(void *p_arg)
 {
-    printf("User uart recv task start.\r\n");
+    UCORE_DEBUG_PRINT("User uart recv task start.\r\n");
 
     /* enter event loop */
     UUart_EventRecvLoop();
 
-    printf("User uart recv task exit.\r\n");
+    UCORE_DEBUG_PRINT("User uart recv task exit.\r\n");
 }
 
 void UUart_Init(void)
-{
-    u16          usTotalLen = 0; 
-    EEM_HEADER_S *pHeader   = NULL;
-    u8           *pcBuff    = NULL;
-    
+{        
     g_QSemUart2MsgRecv = OSQCreate(&g_ucUart2RxdBuff[0], MAX_UART_RECV_MSG_BUFF_SIZE);
     if (NULL == g_QSemUart2MsgRecv)
     {
-        printf("Create g_OSemBuffRwEvent failed.\r\n");
+        UCORE_DEBUG_PRINT("Create g_OSemBuffRwEvent failed.\r\n");
         return;
     }
 
     g_OSemBuffRwEvent = OSSemCreate(1);
     if (NULL == g_OSemBuffRwEvent)
     {
-        printf("Create g_OSemBuffRwEvent failed.\r\n");
+        UCORE_DEBUG_PRINT("Create g_OSemBuffRwEvent failed.\r\n");
         return;
     }
-
-    /* query ep basic info */
-	pHeader = EEM_CreateHeader(0, EEM_COMMAND_QUERY_EPINFO, UCORE_ERR_SUCCESS);
-	if (NULL == pHeader)
-	{
-	    printf("EEM CreateHeader failed.\r\n");
-        return;
-    }
-
-    /* get buff */
-	pcBuff = EEM_GetBuff(pHeader, &usTotalLen);
-    if (NULL != pcBuff)
-    {
-        USART_Send(USART2, usTotalLen, (void *) pcBuff);
-    }
-
-    /* dump message */
-    EEM_DumpMessage(pHeader);
-
-    /* clean buffer */
-    EEM_Delete((void **) &pHeader);
             
-    printf("User task uart init finished.\r\n");
+    UCORE_DEBUG_PRINT("User task uart init finished.\r\n");
 }
 
 void UUart_EventRecvLoop(void)
@@ -141,7 +115,7 @@ void UUart_EventRecvLoop(void)
             OSSemPend(g_OSemBuffRwEvent, 1000, &err);
             if (OS_NO_ERR == err)
             {
-                g_ucUart2RXArray[g_ucUartBuffPos++] = *pbuff;
+                g_ucUart2RXArray[g_ulUartBuffPos++] = *pbuff;
                 
                 OSSemPost(g_OSemBuffRwEvent);
             }            
@@ -158,7 +132,7 @@ void UUart_TaskProcessProc(void *p_arg)
     u8              ucResult  = 0;
     EEM_HEADER_S    *pHeader  = NULL;
     
-    printf("User uart process task start.\r\n");
+    UCORE_DEBUG_PRINT("User uart process task start.\r\n");
 
     /* enter event loop */
     while (1)
@@ -166,7 +140,7 @@ void UUart_TaskProcessProc(void *p_arg)
         OSSemPend(g_OSemBuffRwEvent, 1000, &err);
         if (OS_NO_ERR == err)
         {
-    		while (UCORE_ERR_NO_MESSAGE != (ucResult = EEM_GetMessage(g_ucUart2RXArray, &g_ucUartBuffPos, &pHeader)))
+    		while (UCORE_ERR_NO_MESSAGE != (ucResult = EEM_GetMessage(g_ucUart2RXArray, &g_ulUartBuffPos, &pHeader)))
     		{
     			if (UCORE_ERR_SUCCESS == ucResult)
     			{
@@ -190,7 +164,7 @@ void UUart_TaskProcessProc(void *p_arg)
                                         memset(pEpInfo, 0, sizeof(EP_INFO_S));
 
                                         /* asign values */
-                                    	pEpInfo->ucEpId     = pHeader->ucEpId;
+                                    	pEpInfo->ucEpId     = pPayload->ucEpId;
                                         pEpInfo->ucEpType   = pPayload->ucEpType;
                                         pEpInfo->usEpAddr   = pPayload->usEpAddr;    
 
@@ -211,7 +185,7 @@ void UUart_TaskProcessProc(void *p_arg)
                                         /* check result */                                        
                                         if (UCORE_ERR_SUCCESS != ucResult)
                                         {
-                                            printf("Send Ep[%d] query ep info message Failed.\r\n", pHeader->ucEpId);
+                                            UCORE_DEBUG_PRINT("Send Ep[%d] query ep info message Failed.\r\n", pHeader->ucEpId);
                                         }
                                     }
                                 }
@@ -219,10 +193,22 @@ void UUart_TaskProcessProc(void *p_arg)
                             break;
                         case EEM_COMMAND_COOR_STATCHAG:
                             {   
-                                ucResult = UCore_PostMessage1(UCORE_MESSAGE_TYPE_COOR_STATCHAG, 0, NULL);
+                                u16             usPayLen    = 0;
+                                u16             *pPanid     = NULL;
+
+                                /* here get message payload */
+                                pPanid = (u16 *) EEM_GetPayload(pHeader, EEM_PAYLOAD_TYPE_COORD_NWK_ID, &usPayLen);
+                                if (NULL == pPanid) /* must not be null */
+                                {
+                                    UCORE_DEBUG_PRINT("Coordinator is online, but with no panid.\r\n");
+                                    break;
+                                }
+
+                                /* send message to core processor */
+                                ucResult = UCore_PostMessage1(UCORE_MESSAGE_TYPE_COOR_STATCHAG, sizeof(u16), pPanid);
                                 if (UCORE_ERR_SUCCESS != ucResult)
                                 {
-                                    printf("Send coordinator state change message Failed.\r\n");
+                                    UCORE_DEBUG_PRINT("Send coordinator state change message Failed.\r\n");
                                 }
                             }
                             break;
@@ -265,7 +251,7 @@ void UUart_TaskProcessProc(void *p_arg)
                                         /* check result */                                        
                                         if (UCORE_ERR_SUCCESS != ucResult)
                                         {
-                                            printf("Send Ep[%d] online message Failed.\r\n", pHeader->ucEpId);
+                                            UCORE_DEBUG_PRINT("Send Ep[%d] online message Failed.\r\n", pHeader->ucEpId);
                                         }
                                     }
                                 }
@@ -273,7 +259,25 @@ void UUart_TaskProcessProc(void *p_arg)
                             break;
                         case EEM_COMMAND_EP_OFFLINE:
                             break;
-                        case EEM_COMMAND_TRANS_COM:
+                        case EEM_COMMAND_GET_EPID:
+                            {
+                                u16  usPayLen  = 0;
+                                u16  *pEpid    = NULL;
+                                
+                                /* here get message payload */
+                                pEpid = (u16 *) EEM_GetPayload(pHeader, EEM_PAYLOAD_TYPE_EP_ID, &usPayLen);
+                                if (NULL != pEpid) /* must not be null */
+                                {
+                                    /* send message to core processor */
+                                    ucResult = UCore_PostMessage1(UCORE_MESSAGE_TYPE_CHANGE_EPID, sizeof(u16), pEpid);
+                                    if (UCORE_ERR_SUCCESS != ucResult)
+                                    {
+                                        UCORE_DEBUG_PRINT("Send core message ep change id Failed.\r\n");
+                                    }
+                                }
+                            }
+                            break;
+                        case EEM_COMMAND_TRANS_COM_READ:
                             {
                                 u16             usPayLen  = 0;
                                 u8              *pPayload = NULL;
@@ -283,15 +287,15 @@ void UUart_TaskProcessProc(void *p_arg)
                                 if (NULL != pPayload) /* must not be null */
                                 {
                                     /* ok, send a message to core */
-                                    ucResult = UCore_PostMessage1(UCORE_MESSAGE_TYPE_TRANS_COM, usPayLen, (void *) pPayload);
+                                    ucResult = UCore_PostMessage3(UCORE_MESSAGE_TYPE_TRANS_COM_READ, usPayLen, (void *) pPayload, pHeader->ucEpId, 0, pHeader->usSeq, pHeader->usTransId);
                                     if (UCORE_ERR_SUCCESS != ucResult)
                                     {
-                                        printf("Send Ep[%d] trans com message Failed.\r\n", pHeader->ucEpId);
+                                        UCORE_DEBUG_PRINT("Send Ep[%d] trans com message Failed.\r\n", pHeader->ucEpId);
                                     }
                                 }
                             }
                             break;
-                        case EEM_COMMAND_REPORT_GPS:
+                        case EEM_COMMAND_REPORT_GPS_DATA:
                             {
                                 u16                 usPayLen   = 0;
                                 EEM_EP_GPS_INFO_S   *pGpsInfo = NULL;
@@ -303,7 +307,7 @@ void UUart_TaskProcessProc(void *p_arg)
                                     /* check ep id */
                                     if (pHeader->ucEpId != pGpsInfo->epid)
                                     {
-                                        printf("Check ep invalid, header:%d info:%d bring to same!\r\n", pHeader->ucEpId, pGpsInfo->epid);
+                                        UCORE_DEBUG_PRINT("Check ep invalid, header:%d info:%d bring to same!\r\n", pHeader->ucEpId, pGpsInfo->epid);
 
                                         pGpsInfo->epid = pHeader->ucEpId;
                                     }
@@ -312,13 +316,13 @@ void UUart_TaskProcessProc(void *p_arg)
                                     ucResult = UCore_PostMessage1(UCORE_MESSAGE_TYPE_REPORT_GPS, usPayLen, (void *) pGpsInfo);
                                     if (UCORE_ERR_SUCCESS != ucResult)
                                     {
-                                        printf("Send Ep[%d] report GPS message Failed.\r\n", pHeader->ucEpId);
+                                        UCORE_DEBUG_PRINT("Send Ep[%d] report GPS message Failed.\r\n", pHeader->ucEpId);
                                     }
                                 }                                
                             }
                             break;
                         default:
-                            printf("Unknown message type[%d] from uart.\r\n", pHeader->usCommand);
+                            UCORE_DEBUG_PRINT("Unknown message type[%d] from uart.\r\n", pHeader->usCommand);
                             break;
                     }                    
 
@@ -339,11 +343,11 @@ static void UUart_DumpMemory(void)
 {
     u8    i = 0;
 
-    for (i = 0; i < g_ucUartBuffPos; i++)
+    for (i = 0; i < g_ulUartBuffPos; i++)
     {
-        printf("%02X ", g_ucUart2RXArray[i]);
+        UCORE_DEBUG_PRINT("%02X ", g_ucUart2RXArray[i]);
     }
     
-    printf("\r\n");
+    UCORE_DEBUG_PRINT("\r\n");
 }
 

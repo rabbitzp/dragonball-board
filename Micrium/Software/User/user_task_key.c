@@ -14,8 +14,10 @@
 */
 #include <includes.h>
 #include <user_core.h>
-#include "GUI_WndDef.h"  /* valid LCD configuration */
 
+#if (DEF_ENABLED == OS_USER_LCD_SUPPORT)
+#include "GUI_WndDef.h"  /* valid LCD configuration */
+#endif
 
 /*----------------macros declare here---------------------*/
 #define PIN_USER_KEY_HOME       GPIO_Pin_3            /* GPIOD*/
@@ -37,7 +39,7 @@ u8 UKey_Start(void)
 {
     u8          ucResult    = UCORE_ERR_COMMON_FAILED;
 
-    printf("starting user task key...\r\n");
+    UCORE_DEBUG_PRINT("starting user task key...\r\n");
 
     ucResult = OSTaskCreate(UKey_TaskProc, (void *)0, (OS_STK *)&g_UserTaskKeySTK[DEFAULT_USER_KEY_STK_SIZE - 1], DEFAULT_USER_TASK_KEY_PRIO);
 
@@ -46,14 +48,14 @@ u8 UKey_Start(void)
         return UCORE_ERR_SUCCESS;
     }
 
-    printf("User task Key Failed value:%d.\r\n", ucResult);
+    UCORE_DEBUG_PRINT("User task Key Failed value:%d.\r\n", ucResult);
 
     return UCORE_ERR_CREATE_TASK_FAILED;
 }
 
 void UKey_TaskProc(void *p_arg)
 {
-    printf("User key Task Start.\r\n");
+    UCORE_DEBUG_PRINT("User key Task Start.\r\n");
 
     /* call init */
     UKey_Init();
@@ -61,7 +63,7 @@ void UKey_TaskProc(void *p_arg)
     /* enter event loop */
     UKey_EventLoop();
 
-    printf("User key Task Exit.\r\n");
+    UCORE_DEBUG_PRINT("User key Task Exit.\r\n");
 }
 
 void UKey_Init(void)
@@ -136,8 +138,9 @@ void UKey_EventLoop(void)
 				if (abs_time(time_pressed, OSTime) > DETECT_TIME)
 				{
 					processed = 1;
-
-				    GUI_SendKeyMsg(GUI_KEY_HOME, 1);                    
+#if (DEF_ENABLED == OS_USER_LCD_SUPPORT)
+				    GUI_SendKeyMsg(GUI_KEY_HOME, 1);
+#endif
 				}
 					
 			}
@@ -169,8 +172,9 @@ void UKey_EventLoop(void)
 				if (abs_time(time_pressed, OSTime)>DETECT_TIME)
 				{
 					processed = 1;
-
-				    GUI_SendKeyMsg(GUI_KEY_ENTER, 1);                    
+#if (DEF_ENABLED == OS_USER_LCD_SUPPORT)
+				    GUI_SendKeyMsg(GUI_KEY_ENTER, 1);
+#endif
 				}
 					
 			}
@@ -202,8 +206,9 @@ void UKey_EventLoop(void)
 				if (abs_time(time_pressed, OSTime)>DETECT_TIME)
 				{				
 					processed = 1;
-
-                    GUI_SendKeyMsg(GUI_KEY_UP, 1);                    
+#if (DEF_ENABLED == OS_USER_LCD_SUPPORT)
+                    GUI_SendKeyMsg(GUI_KEY_UP, 1);
+#endif
 				}
 					
 			}
@@ -235,8 +240,9 @@ void UKey_EventLoop(void)
 				if (abs_time(time_pressed, OSTime)>DETECT_TIME)
 				{				
 					processed = 1;
-
-                    GUI_SendKeyMsg(GUI_KEY_DOWN, 1);                    
+#if (DEF_ENABLED == OS_USER_LCD_SUPPORT)
+                    GUI_SendKeyMsg(GUI_KEY_DOWN, 1);
+#endif
 				}
 					
 			}
@@ -268,8 +274,9 @@ void UKey_EventLoop(void)
 				if (abs_time(time_pressed, OSTime)>DETECT_TIME)
 				{
 					processed = 1;
-
-                    GUI_SendKeyMsg(GUI_KEY_ESCAPE, 1);                    
+#if (DEF_ENABLED == OS_USER_LCD_SUPPORT)
+                    GUI_SendKeyMsg(GUI_KEY_ESCAPE, 1);
+#endif
 				}
 					
 			}

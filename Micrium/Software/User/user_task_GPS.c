@@ -15,14 +15,15 @@
 #include <includes.h>
 #include <user_core.h>
 #include <user_task_gps.h>
-#include "GUI_WndDef.h"  /* valid LCD configuration */
-#include "GUI_WndMain.h"
 #include "nmea_parser.h"
 #include <user_os_func.h>
 #include <eem.h>
 #include <eem_struct.h>
 #include <user_ep_manage.h>
-
+#if (DEF_ENABLED == OS_USER_LCD_SUPPORT)
+#include "GUI_WndDef.h"  /* valid LCD configuration */
+#include "GUI_WndMain.h"
+#endif
 
 #define MAX_GPS_OSQ_SIZE 32
 
@@ -45,7 +46,7 @@ u8 GPS_Start(void)
 {
     u8          ucResult    = UCORE_ERR_COMMON_FAILED;
 
-    printf("starting user task GPS...\r\n");
+    UCORE_DEBUG_PRINT("starting user task GPS...\r\n");
 
     /* call init first */
     GPS_Init();    
@@ -53,7 +54,7 @@ u8 GPS_Start(void)
     ucResult = OSTaskCreate(GPS_TaskRecvProc, (void *)0, (OS_STK *)&g_UserTaskGPSRecvSTK[DEFAULT_USER_GPS_RECV_STK_SIZE - 1], DEFAULT_USER_TASK_GPS_RECV_PRIO);
     if (OS_ERR_NONE != ucResult)
     {
-        printf("User task GPS receive create Failed, value:%d.\r\n", ucResult);
+        UCORE_DEBUG_PRINT("User task GPS receive create Failed, value:%d.\r\n", ucResult);
         return UCORE_ERR_CREATE_TASK_FAILED;
     }
 
@@ -62,12 +63,12 @@ u8 GPS_Start(void)
 
 void GPS_TaskRecvProc(void *p_arg)
 {
-    printf("User GPS recv task start.\r\n");
+    UCORE_DEBUG_PRINT("User GPS recv task start.\r\n");
 
     /* enter event loop */
     GPS_EventRecvLoop();
 
-    printf("User GPS recv task exit.\r\n");
+    UCORE_DEBUG_PRINT("User GPS recv task exit.\r\n");
 
     return;
 }
@@ -77,10 +78,10 @@ void GPS_Init(void)
     g_QSemGPSMsgRecv = OSQCreate(&g_GPSOSQ[0], MAX_GPS_OSQ_SIZE);
     if (NULL == g_QSemGPSMsgRecv)
     {
-        printf("Create g_OSemGPSMsgRecv failed.\r\n");
+        UCORE_DEBUG_PRINT("Create g_OSemGPSMsgRecv failed.\r\n");
     }
 
-    printf("User task GPS init finished.\r\n");
+    UCORE_DEBUG_PRINT("User task GPS init finished.\r\n");
 }
 
 void GPS_EventRecvLoop(void)
@@ -99,8 +100,10 @@ void GPS_EventRecvLoop(void)
         pNmeaInfo = (nmeaINFO *) OSQPend(g_QSemGPSMsgRecv, 0, &err);
         if ((OS_NO_ERR == err) && (NULL != pNmeaInfo))
         {
-            WM_MESSAGE          stUiMessage;
             EEM_EP_GPS_INFO_S   stEemGpsInfo;
+        
+#if (DEF_ENABLED == OS_USER_LCD_SUPPORT)        
+            WM_MESSAGE          stUiMessage;
             
             pNmeaInfo->id = g_stMyEpInfo.ucEpId;
             
@@ -109,10 +112,17 @@ void GPS_EventRecvLoop(void)
 
             /* send to radar window */
             WM_SendMessage(GUI_GetCurrentWnd(), &stUiMessage);  
+#endif
+
+            /* trace gps info */
+            if (1 == g_udev_config.enGpsDebug)
+            {
+                UCORE_DEBUG_PRINT("My GPS info lon:%.5f lat:%.5f\r\n", pNmeaInfo->lon, pNmeaInfo->lat); 
+            }
 
             /* 如果是普通终端，需要发送GPS信息给CC2530，由CC2530上再进行处理，如果是EP，则透传给COORD
                如果是COORD，有两种处理方式，如果是本机的GPS，则直接广播，如果是EP透传的，也将GPS广播 */
-        	pHeader = EEM_CreateHeader(g_stMyEpInfo.ucEpId, EEM_COMMAND_REPORT_GPS, UCORE_ERR_SUCCESS);
+        	pHeader = EEM_CreateHeader(g_stMyEpInfo.ucEpId, EEM_COMMAND_REPORT_GPS_DATA, UCORE_ERR_SUCCESS);
         	if (NULL != pHeader)
         	{
                 /* prepare struct */

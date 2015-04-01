@@ -16,7 +16,7 @@ File        : MainTask.c
 Purpose     : Init GUI & call of GUI-demo
 --------------------END-OF-HEADER-------------------------------------
 */
-
+#include <includes.h>
 #include "GUI.h"
 #include "GUI_UserApp.h"
 

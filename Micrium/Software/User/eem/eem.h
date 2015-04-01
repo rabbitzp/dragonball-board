@@ -27,15 +27,26 @@ typedef enum _tagEEMCommand
 {
     /* 0 - 99 reseverd */
 
-    /* 100 - 499 system */
-    EEM_COMMAND_COOR_STATCHAG   = 100,
-    EEM_COMMAND_EP_ONLINE       = 101,
-    EEM_COMMAND_EP_OFFLINE      = 102,
-    EEM_COMMAND_QUERY_EPINFO    = 103,
-    EEM_COMMAND_REPORT_GPS      = 104,
+    /* 100 - 199 system */
+    EEM_COMMAND_COOR_STATCHAG           = 100,
+    EEM_COMMAND_EP_ONLINE               = 101,
+    EEM_COMMAND_EP_OFFLINE              = 102,
+    EEM_COMMAND_QUERY_EPINFO            = 103,
+    EEM_COMMAND_REPORT_GPS_DATA         = 105,
+    EEM_COMMAND_COOR_ONLINE             = 106,
+    EEM_COMMAND_SET_PANDID              = 107,
+    EEM_COMMAND_GET_PANDID              = 108,
+    
+    /* 200 - 299 for zstack using */
+    EEM_COMMAND_REGIST_EP               = 200,
 
     /* user command from 500 */
-    EEM_COMMAND_TRANS_COM       = 500,
+    EEM_COMMAND_TRANS_COM_READ          = 500,    
+    EEM_COMMAND_TRANS_COM_WRITE         = 501,
+
+    EEM_COMMAND_SET_EPID                = 600,
+    EEM_COMMAND_GET_EPID                = 601,    
+    
 
     EEM_COMMAND_MAX,
     /* END OF COMMAND, WILL NOT REACH!! */
@@ -51,6 +62,10 @@ typedef enum _tagEEMPalyloadType
     EEM_PAYLOAD_TYPE_EP_ADDR        = 4,
     EEM_PAYLOAD_TYPE_EP_INFO        = 5,
     EEM_PAYLOAD_TYPE_EP_GPS_INFO    = 6,
+    EEM_PAYLOAD_TYPE_COORD_NWK_ID   = 7,
+
+    /* for zstack using 500 - 1000 */
+    EEM_PAYLOAD_TYPE_REGIST_INFO    = 500,
 
     EEM_PAYLOAD_TYPE_MAX,
     
@@ -71,7 +86,8 @@ typedef struct _tagEEMHeader
     u16 usSeq;          /* from 1, recircle */
     u16 usPayloadLen;   /* data len, not include header */
     u8  ucResult;       /* ref to >UCORE_ERROR_E< */
-    u8  ucRev[3];       /* reserved */
+    u8  ucSPara;        /* Simple Para */
+    u16 usTransId;      /* for transaction */
 }EEM_HEADER_S;
 
 typedef struct _tagEEM_PL_HEAD
@@ -81,18 +97,27 @@ typedef struct _tagEEM_PL_HEAD
 }EEM_PL_HEAD;
 
 /*--------------functions declare here-----------------------------*/
+
+/* be carefully using, this function will asign buffer */
 EEM_HEADER_S    *EEM_CreateHeader(u8 EpId, u16 Command, u8 result);
+
+/* be carefully using, this function will asign buffer */
 EEM_HEADER_S    *EEM_CreateRespHeader(EEM_HEADER_S *ReqHeader, u8 result);
 
+/* be carefully using, this function will asign buffer */
 u8              EEM_CreateBody(EEM_HEADER_S **ppHeader, u16 len, void *data);
+
 u8              EEM_GetBody(EEM_HEADER_S *Header, u16 *len, void **data);
 
+/* be carefully using, this function will asign buffer */
 u8              EEM_AppendPayload(EEM_HEADER_S **ppHeader, u16 PayloadType, u16 PayloadLen, void *data);
+
 void            *EEM_GetPayload(EEM_HEADER_S *Header, u16 PayloadType, u16 *PayloadLen);
 
 u8              *EEM_GetBuff(EEM_HEADER_S *Header, u16 *len);
 
-u8              EEM_GetMessage(u8 *Buff, u8 *BufSize, EEM_HEADER_S **ppHeader);
+/* be carefully using, this function will asign buffer to ppHeader */
+u8              EEM_GetMessage(u8 *Buff, u32 *BufSize, EEM_HEADER_S **ppHeader);
 
 void            EEM_Delete(void **Header);
 

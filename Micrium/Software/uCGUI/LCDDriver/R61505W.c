@@ -61,6 +61,7 @@ static void LCD_R61505W_FSMCConfig(void);
 static void LCD_R61505W_CtrlLinesConfig(void);
 static void LCD_R61505W_WriteReg(volatile u16 _usAddr, u16 _usValue);
 static u16  LCD_R61505W_ReadReg(volatile u16 _usAddr);
+static void LCD_R61505W_Reset(void);
 
 void LCD_R61505W_Delayms(u16 ms)
 {
@@ -77,6 +78,24 @@ void LCD_R61505W_Delayms(u16 ms)
 	}
 
 	return;
+}
+
+/*
+*********************************************************************************************************
+*	函 数 名: LCD_R61505W_Reset
+*	功能说明: LCD 复位
+*	形    参：
+*			
+*	返 回 值: 无
+*********************************************************************************************************
+*/
+static void LCD_R61505W_Reset(void)
+{
+    GPIO_ResetBits(GPIOB, GPIO_Pin_5);
+
+    LCD_R61505W_Delayms(2);
+
+    GPIO_SetBits(GPIOB, GPIO_Pin_5);
 }
 
 /*
@@ -151,7 +170,7 @@ static void LCD_R61505W_CtrlLinesConfig(void)
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_FSMC, ENABLE);
 
 	/* 使能 FSMC, GPIOD, GPIOE, GPIOF, GPIOG 和 AFIO 时钟 */
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOE |
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOE |
 	                     RCC_APB2Periph_GPIOF | RCC_APB2Periph_GPIOG |
 	                     RCC_APB2Periph_AFIO, ENABLE);
 
@@ -185,6 +204,17 @@ static void LCD_R61505W_CtrlLinesConfig(void)
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
 	GPIO_Init(GPIOG, &GPIO_InitStructure);
 
+    /* 设置 PB.5 nRst 为复用推挽输出 */
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+	//GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
+	//GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	//GPIO_Init(GPIOB, &GPIO_InitStructure);    
+
+    /* 点亮背光 */
+    //LCD_BKL_ON();
 }
 
 /*
@@ -349,9 +379,13 @@ void LCD_R61505W_Init(void)
 	/* FSMC重置后必须加延迟才能访问总线设备  */
 	LCD_R61505W_Delayms(5);
 
+    /* 复位LCD */
+    LCD_R61505W_Reset();    
+
+    /* 获取ID */
 	id = LCD_R61505W_GetID();  	/* 读取LCD驱动芯片ID */
 
-	printf("芯片ID：0X%04X\r\n", id);
+	printf("LCD芯片ID：0X%04X\r\n", id);
 
 	printf("初始化LCD \r\n");
 	LCD_R61505W_InitHard();

@@ -52,7 +52,7 @@ void dlist_Print(void *pdata)
 
 	if (pInfo)
 	{
-		printf("%d\r\n", pInfo->ucEpId);
+		UCORE_DEBUG_PRINT("%d\r\n", pInfo->ucEpId);
 	}
 }
 
@@ -68,7 +68,7 @@ u8 UEM_Init(void)
     g_QSemListGuard = OSSemCreate(1);
     if (NULL == g_QSemListGuard)
     {
-        printf("Create sem for dlist failed.\r\n");
+        UCORE_DEBUG_PRINT("Create sem for dlist failed.\r\n");
         return UCORE_ERR_COMMON_FAILED;
     }
 
@@ -76,7 +76,7 @@ u8 UEM_Init(void)
     pEp = (EP_INFO_S *) malloc(sizeof(EP_INFO_S));
     if (NULL == pEp)
     {
-        printf("Alloc ep node buff failed.\r\n");
+        UCORE_DEBUG_PRINT("Alloc ep node buff failed.\r\n");
         return UCORE_ERR_MEM_ALLOC_FAILED;
     }
 
@@ -91,7 +91,7 @@ u8 UEM_Init(void)
 	g_pEpDlistHead = create_double_link_node((void *) pEp);
     if (NULL == g_pEpDlistHead)
     {
-        printf("Init ep dlist head failed.\r\n");
+        UCORE_DEBUG_PRINT("Init ep dlist head failed.\r\n");
 
         /* free asigned buffer */
         free((void *) pEp);
@@ -110,7 +110,7 @@ u8 UEM_AddEp(u8 ucEpId, u8 ucEpType, u16 usEpAddr, u8 *sEpName)
     OSSemPend(g_QSemListGuard, 1000, &err);
     if (OS_NO_ERR != err)
     {
-        printf("Aquire sem failed, ERR[%d].\r\n", err);
+        UCORE_DEBUG_PRINT("Aquire sem failed, ERR[%d].\r\n", err);
         return UCORE_ERR_COMMON_FAILED;
     }
 
@@ -118,7 +118,7 @@ u8 UEM_AddEp(u8 ucEpId, u8 ucEpType, u16 usEpAddr, u8 *sEpName)
     pEp = (EP_INFO_S *) malloc(sizeof(EP_INFO_S));
     if (NULL == pEp)
     {
-        printf("Alloc ep node buff failed.\r\n");
+        UCORE_DEBUG_PRINT("Alloc ep node buff failed.\r\n");
 
         /* release sem first */
         OSSemPost(g_QSemListGuard);
@@ -153,7 +153,7 @@ u8 UEM_AddEp(u8 ucEpId, u8 ucEpType, u16 usEpAddr, u8 *sEpName)
     OSSemPost(g_QSemListGuard);
 
     /* for testing */
-    printf("Total Nodes:%d\r\n", count_number_in_double_link(g_pEpDlistHead));
+    UCORE_DEBUG_PRINT("Total Nodes:%d\r\n", count_number_in_double_link(g_pEpDlistHead));
 
     return UCORE_ERR_SUCCESS;
 }
@@ -166,7 +166,7 @@ u8 UEM_DelEp(u8 ucEpId)
     OSSemPend(g_QSemListGuard, 1000, &err);
     if (OS_NO_ERR != err)
     {
-        printf("Aquire sem failed, ERR[%d].\r\n", err);
+        UCORE_DEBUG_PRINT("Aquire sem failed, ERR[%d].\r\n", err);
         return UCORE_ERR_COMMON_FAILED;
     }
     
@@ -175,7 +175,7 @@ u8 UEM_DelEp(u8 ucEpId)
     /* call delete */
     if (TRUE != delete_data_from_double_link(&g_pEpDlistHead, (void *) &stFindInfo, dlist_compare))
     {
-        printf("Delete EP[%d] failed.\r\n", ucEpId);
+        UCORE_DEBUG_PRINT("Delete EP[%d] failed.\r\n", ucEpId);
 
         /* release sem */
         OSSemPost(g_QSemListGuard);
@@ -197,7 +197,7 @@ u8 UEM_UpdateEp(u8 ucEpId, u8 ucEpType, u16 usEpAddr, u8 *sEpName)
     OSSemPend(g_QSemListGuard, 1000, &err);
     if (OS_NO_ERR != err)
     {
-        printf("Aquire sem failed, ERR[%d].\r\n", err);
+        UCORE_DEBUG_PRINT("Aquire sem failed, ERR[%d].\r\n", err);
         return UCORE_ERR_COMMON_FAILED;
     }
     
@@ -241,7 +241,7 @@ EP_INFO_S *UEM_FindEp(u8 ucEpId)
     /* check ep info data */
     if (NULL == pNodeFind->data)
     {
-        printf("Check EP[%d] data failed.\r\n", ucEpId);        
+        UCORE_DEBUG_PRINT("Check EP[%d] data failed.\r\n", ucEpId);        
         return NULL;    
     }
     

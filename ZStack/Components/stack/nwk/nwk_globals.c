@@ -53,6 +53,7 @@
 #include "rtg.h"
 #include "ZDConfig.h"
 #include "ZGlobals.h"
+#include <stdio.h>
 
 #if defined ( LCD_SUPPORTED )
   #include "OnBoard.h"
@@ -521,7 +522,11 @@ void nwk_Status( uint16 statusCode, uint16 statusValue )
     case NWK_STATUS_ED_ADDR:
       if ( ZSTACK_END_DEVICE_BUILD )
       {
-        HalLcdWriteStringValue( (char*)EndDeviceStr, statusValue, 16, HAL_LCD_LINE_1 );
+        /* Begin: Modified by Nirz, 20150324 */
+        //HalLcdWriteStringValue( (char*)EndDeviceStr, statusValue, 16, HAL_LCD_LINE_1 );
+        sprintf(gsLCDWriteBuf, "AD:%02X Pan:%d", statusValue, _NIB.nwkPanId);    
+        HalLcdWriteString(gsLCDWriteBuf, HAL_LCD_LINE_1 );
+        /* End: Modified by Nirz, 20150324 */
       }
       break;
 
@@ -543,17 +548,6 @@ void nwk_Status( uint16 statusCode, uint16 statusValue )
       break;
   }
 #endif
-
-#if !ZDO_COORDINATOR
-  /* when this happened, simply reset system */
-  if (NWK_ERROR_ASSOC_CNF_DENIED == statusCode)
-  {
-#if defined ( LCD_SUPPORTED )
-      HalLcdWriteString("System reboot...", HAL_LCD_LINE_3 );
-#endif
-      SystemReset();
-  }
-#endif  
 }
 
 /*********************************************************************

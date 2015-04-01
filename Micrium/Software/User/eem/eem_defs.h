@@ -32,6 +32,10 @@ typedef enum _tagUCErrCode
 	UCORE_ERR_PAPA_ERROR					= 5,
 	UCORE_ERR_INVALID_MESSAGE				= 6,
 	UCORE_ERR_NO_MESSAGE                    = 7,
+	UCORE_ERR_NET_INIT_FAILED               = 8,
+	UCORE_ERR_NET_CONNECT_FAILED            = 9,
+	UCORE_ERR_NET_CONNECT_TIMEOUT           = 10,
+	UCORE_ERR_NET_IO_ERROR                  = 11,	
 
     /* bottom */
     UCORE_ERR_BUTT,

@@ -15,17 +15,35 @@
 #include <math.h>
 #include <includes.h>
 #include <user_core.h>
+#include <user_driver_probe.h>
 #include <user_ep_manage.h>
-#include <user_task_key.h>
-#include <user_task_hmc.h>
-#include <user_task_uart.h>
-#include <user_task_gps.h>
 #include <user_os_func.h>
 #include <eem.h>
 #include <eem_struct.h>
-#include "GUI_WndDef.h"  /* valid LCD configuration */
-#include "GUI_WndMain.h"
 #include "nmea_parser.h"
+
+#include <user_task_key.h>
+
+#include <user_task_console.h>
+
+#include <tfs.h>
+
+#if (DEF_ENABLED == OS_USER_HMC_SUPPORT)
+#include <user_task_hmc.h>
+#endif
+
+#include <user_task_uart.h>
+
+#if (DEF_ENABLED == OS_USER_GPS_SUPPORT)
+#include <user_task_gps.h>
+#endif
+
+#if (DEF_ENABLED == OS_USER_LCD_SUPPORT)
+#include "GUI_WndDef.h"     /* valid LCD configuration */
+#include "GUI_WndMain.h"
+#endif
+
+#include <user_debug.h>
 
 #define DEFAULT_USER_TASK_PRIO              5  //优先级高
 #define DEFAULT_USER_STK_SIZE               128
@@ -34,10 +52,12 @@
 extern EP_INFO_S g_stMyEpInfo;
 
 /*----------------local global vars declare here---------------------*/
-OS_STK      g_UserCoreSTK[DEFAULT_USER_STK_SIZE];
+OS_STK               g_UserCoreSTK[DEFAULT_USER_STK_SIZE];
 
-void        *g_UserCoreMsgQueue[MAX_USER_CORE_MSG_SIZE];
-OS_EVENT    *g_QSemCoreMsg = NULL;
+void                *g_UserCoreMsgQueue[MAX_USER_CORE_MSG_SIZE];
+OS_EVENT            *g_QSemCoreMsg = NULL;
+
+UDEV_CONFIG_S       g_udev_config;
 
 /* static local global functions here */
 static void UCore_TaskProc(void *p_arg);
@@ -46,7 +66,7 @@ static void UCore_EventLoop(void);
 
 u8 UCore_Start(void)
 {    
-    printf("starting user core....\r\n");
+    UCORE_DEBUG_PRINT("starting user core....\r\n");
 
     if (OS_ERR_NONE == OSTaskCreate(UCore_TaskProc, (void *)0, (OS_STK *)&g_UserCoreSTK[DEFAULT_USER_STK_SIZE - 1], DEFAULT_USER_TASK_PRIO))
     {
@@ -60,8 +80,25 @@ void UCore_TaskProc(void *p_arg)
 {
     u8 ucResult = UCORE_ERR_COMMON_FAILED;
     
-    printf("User Core Task Start.\r\n");
+    UCORE_DEBUG_PRINT("User Core Task Start.\r\n");
 
+    /* for console print */
+    g_udev_config.enDebug = 1;
+
+    /* console init first */
+    ucResult = UConsole_Start();
+    if (UCORE_ERR_SUCCESS != ucResult)
+    {
+        UCORE_DEBUG_PRINT("Init console failed.\r\n");
+    }
+    
+    /* probe driver first */
+    ucResult = User_DriverProbe();
+    if (UCORE_ERR_SUCCESS != ucResult)
+    {
+        UCORE_DEBUG_PRINT("User_Driver Probe failed.\r\n");
+    } 
+    
     /* call init */
     UCoreInit();
 
@@ -69,51 +106,61 @@ void UCore_TaskProc(void *p_arg)
     ucResult = UEM_Init();
     if (UCORE_ERR_SUCCESS != ucResult)
     {
-        printf("Init ep manager failed.\r\n");
+        UCORE_DEBUG_PRINT("Init ep manager failed.\r\n");
     }    
 
     /* create sub task */
     ucResult = UKey_Start();
     if (UCORE_ERR_SUCCESS != ucResult)
     {
-        printf("Start user key task failed.\r\n");
+        UCORE_DEBUG_PRINT("Start user key task failed.\r\n");
     }
 
+#if (DEF_ENABLED == OS_USER_HMC_SUPPORT)
     ucResult = UHMC_Start();
     if (UCORE_ERR_SUCCESS != ucResult)
     {
-        printf("Start user HMC task failed.\r\n");
+        UCORE_DEBUG_PRINT("Start user HMC task failed.\r\n");
     } 
+#endif
 
     ucResult = UUart_Start();
     if (UCORE_ERR_SUCCESS != ucResult)
     {
-        printf("Start user uart task failed.\r\n");
+        UCORE_DEBUG_PRINT("Start user uart task failed.\r\n");
     }    
 
+#if (DEF_ENABLED == OS_USER_GPS_SUPPORT)
     ucResult = GPS_Start();
     if (UCORE_ERR_SUCCESS != ucResult)
     {
-        printf("Start user gps task failed.\r\n");
-    }     
+        UCORE_DEBUG_PRINT("Start user gps task failed.\r\n");
+    }
+#endif
 
     /* enter event loop */
     UCore_EventLoop();
 
-    printf("User Core Task Exit.\r\n");
+    UCORE_DEBUG_PRINT("User Core Task Exit.\r\n");
 }
 
 void UCoreInit(void)
-{
-    /* create message queue */
-    g_QSemCoreMsg = OSQCreate(&g_UserCoreMsgQueue[0], MAX_USER_CORE_MSG_SIZE);
+{   
+    if (TFS_RESULT_SUCESS != TFS_Read(TFS_CONFIG_ITEM_DEV_CONF, sizeof(UDEV_CONFIG_S), &g_udev_config))
+    {
+        g_udev_config.enDebug = 1;
+    
+        UCORE_DEBUG_PRINT("read dev config failed, using default config.\r\n");
+    }
 
-    printf("User Core init finished.\r\n");
+    /* create message queue */
+    g_QSemCoreMsg = OSQCreate(&g_UserCoreMsgQueue[0], MAX_USER_CORE_MSG_SIZE);    
+    
+    UCORE_DEBUG_PRINT("User Core init finished.\r\n");
 }
 
 void UCore_EventLoop(void)
 {
-    u16             i           = 0;
     u8              ucResult    = 0;
     INT8U           err         = 0;
     UCORE_MSG_S     *pMsg       = NULL;
@@ -137,23 +184,50 @@ void UCore_EventLoop(void)
                             /* yes, i'm ready! */                        
                             memcpy(&g_stMyEpInfo, pEpInfo, sizeof(EP_INFO_S));
 
-                            printf("My ep info:id:%d type:%d addr:%x name:%s\r\n", g_stMyEpInfo.ucEpId, g_stMyEpInfo.ucEpType, g_stMyEpInfo.usEpAddr, g_stMyEpInfo.sEpName);
+                            UCORE_DEBUG_PRINT("My ep info:id:%d type:%d addr:%x name:%s\r\n", g_stMyEpInfo.ucEpId, g_stMyEpInfo.ucEpType, g_stMyEpInfo.usEpAddr, g_stMyEpInfo.sEpName);
                         }
                     }
                     break;
                 case UCORE_MESSAGE_TYPE_COOR_STATCHAG:
                     {
-                        printf("Coordinator state change.\r\n");
+                        u16             usTotalLen  = 0;  
+                        u8              *pcBuff     = NULL;
+                        EEM_HEADER_S    *pHeader    = NULL;
+                        u16             *pPanid     = NULL;
+
+                        pPanid = (u16 *) pMsg->pBuf;
+                        if (NULL == pPanid)
+                        {
+                            break;
+                        }
+
+                        /* save current pan id */
+                        g_udev_config.PanId = *pPanid;
+                        
+                        UCORE_DEBUG_PRINT("Coordinator state change, panid:0X%02X.\r\n", g_udev_config.PanId);
+
+                        /* query my basic info */
+                    	pHeader = EEM_CreateHeader(0, EEM_COMMAND_QUERY_EPINFO, UCORE_ERR_SUCCESS);
+                    	if (NULL == pHeader)
+                    	{
+                    	    UCORE_DEBUG_PRINT("EEM CreateHeader failed.\r\n");
+                            return;
+                        }
+                    
+                        /* get buff */
+                    	pcBuff = EEM_GetBuff(pHeader, &usTotalLen);
+                        if (NULL != pcBuff)
+                        {
+                            USART_Send(USART2, usTotalLen, (void *) pcBuff);
+                        }
+                                                            
+                        /* clean buffer */
+                        EEM_Delete((void **) &pHeader);
                     }
                     break;
                 case UCORE_MESSAGE_TYPE_EP_ONLINE:
                     {
-                        u8           ucRet      = 0;
-                        u16          usTotalLen = 0;  
-                        u8           *pcBuff    = NULL;
                         EP_INFO_S    *pEpInfo   = NULL;
-                        EEM_HEADER_S *pHeader   = NULL;
-                        char         sRawData[] = {0x04, 0x00, 0x01, 0x11, 0x00, 0x16};
 
                         /* get ep info */
                         pEpInfo = (EP_INFO_S *) pMsg->pBuf;
@@ -166,11 +240,11 @@ void UCore_EventLoop(void)
                                 ucResult = UEM_UpdateEp(pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
                                 if (UCORE_ERR_SUCCESS != ucResult)
                                 {
-                                    printf("Update ep[%d] failed.\r\n", pEpInfo->ucEpId);
+                                    UCORE_DEBUG_PRINT("Update ep[%d] failed.\r\n", pEpInfo->ucEpId);
                                     break;
                                 }
                                 
-                                printf("Update EP[%d] info, type:%d, addr:%02X, name:%s.\r\n", pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
+                                UCORE_DEBUG_PRINT("Update EP[%d] info, type:%d, addr:%02X, name:%s.\r\n", pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
                             }
                             else/* add new ep */
                             {
@@ -178,61 +252,49 @@ void UCore_EventLoop(void)
                                 ucResult = UEM_AddEp(pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
                                 if (UCORE_ERR_SUCCESS != ucResult)
                                 {
-                                    printf("Add ep[%d] failed.\r\n", pEpInfo->ucEpId);
+                                    UCORE_DEBUG_PRINT("Add ep[%d] failed.\r\n", pEpInfo->ucEpId);
                                     break;
                                 }
                                 
-                                printf("New EP[%d] online, type:%d, addr:%02X, name:%s.\r\n", pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
+                                UCORE_DEBUG_PRINT("New EP[%d] online, type:%d, addr:%02X, name:%s.\r\n", pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
                             }
                         }
-
-                        /* for testing, send a comm query message */
-                        /* send ep online message main board */    
-                    	pHeader = EEM_CreateHeader(pEpInfo->ucEpId, EEM_COMMAND_TRANS_COM, UCORE_ERR_SUCCESS);
-                    	if (NULL == pHeader)
-                    	{
-                            return;
-                        }
-
-                        /* apend ep addr */
-                    	ucRet = EEM_AppendPayload(&pHeader, EEM_PAYLOAD_TYPE_EP_ADDR, sizeof(u16), (void *) &(pEpInfo->usEpAddr));
-                        if (UCORE_ERR_SUCCESS != ucRet)
-                        {
-                            /* clean buffer */
-                            EEM_Delete((void **) &pHeader);        
-                            return;
-                        }
-
-                        /* append raw data */
-                    	ucRet = EEM_AppendPayload(&pHeader, EEM_PAYLOAD_TYPE_RAW_DATA, sizeof(sRawData), (void *) sRawData);
-                        if (UCORE_ERR_SUCCESS != ucRet)
-                        {
-                            /* clean buffer */
-                            EEM_Delete((void **) &pHeader);
-                            return;
-                        }
-
-                        /* get buff */
-                    	pcBuff = EEM_GetBuff(pHeader, &usTotalLen);
-                        if (NULL != pcBuff)
-                        {
-                            USART_Send(USART2, usTotalLen, (void *) pcBuff);
-                        }
-
-                        /* dump message */
-                        EEM_DumpMessage(pHeader);
-
-                        /* clean buffer */
-                        EEM_Delete((void **) &pHeader);
                     }
                     break;
-                case UCORE_MESSAGE_TYPE_TRANS_COM:
+                case UCORE_MESSAGE_TYPE_TRANS_COM_READ:
                     {
-                        char *pcBuff = (char *) pMsg->pBuf;
-                        printf("Trans COM:");
-                        for (i=0; i<pMsg->usBufLen; i++)
-                            printf("%02X ", pcBuff[i]);
-                        printf("\r\n");
+#if 0
+                        u8              ucRet       = 0;
+                        u16             usTotalLen  = 0;  
+                        u8              *pcBuff     = NULL;
+                        EEM_HEADER_S    *pHeader    = NULL;
+
+                        pHeader = EEM_CreateHeader(pMsg->usSrcId, EEM_COMMAND_LH_QUERY_FLOW_DATA, UCORE_ERR_SUCCESS);
+                    	if (NULL != pHeader)
+                    	{              
+                    	    /* set transaction id */
+                            pHeader->usTransId = pMsg->usTransId;
+                            
+                        	ucRet = EEM_AppendPayload(&pHeader, EEM_PAYLOAD_TYPE_RAW_DATA, pMsg->usBufLen, pMsg->pBuf);
+                            if (UCORE_ERR_SUCCESS != ucRet)
+                            {
+                                /* clean buffer */
+                                EEM_Delete((void **) &pHeader);        
+                                break;
+                            }
+
+                            /* now get buffer to send */
+                    		pcBuff = EEM_GetBuff(pHeader, &usTotalLen);
+
+                            ucResult = NET_TcpSyncSend(gTCP_SOCK_TO_SERVER, (u8 *) pcBuff, usTotalLen);
+                            if (UCORE_ERR_SUCCESS != ucResult)
+                            {
+                                UCORE_DEBUG_PRINT("Send trans data to server failed, errno:%d\r\n", ucResult);
+                            }
+
+                    		EEM_Delete((void **) &pHeader);
+                    	}
+#endif
                     }
                     break;
                 case UCORE_MESSAGE_TYPE_REPORT_GPS:
@@ -243,6 +305,7 @@ void UCore_EventLoop(void)
                         pGpsInfo = (EEM_EP_GPS_INFO_S *) pMsg->pBuf;
                         if (NULL != pGpsInfo)
                         {
+#if (DEF_ENABLED == OS_USER_LCD_SUPPORT)                        
                             /* 送到显示模块去 */
                             WM_MESSAGE  stUiMessage = {0};
                             nmeaINFO    stNemaInfo = {0};
@@ -261,23 +324,41 @@ void UCore_EventLoop(void)
 
                             /* send to radar window */
                             WM_SendMessage(GUI_GetCurrentWnd(), &stUiMessage);
+#endif
 
-                            printf("recv gps info lon:%.5f lat:%.5f\r\n", stNemaInfo.lon, stNemaInfo.lat);
-                        }                        
+                            /* trace gps info */
+                            if (1 == g_udev_config.enGpsDebug)
+                            {
+                                UCORE_DEBUG_PRINT("Recv GPS info from[%d] >> lon:%.5f lat:%.5f\r\n", stNemaInfo.id, stNemaInfo.lon, stNemaInfo.lat); 
+                            }
+                        }
+                    }
+                    break;
+                case UCORE_MESSAGE_TYPE_CHANGE_EPID:
+                    {
+                        u16 *pEpid = NULL;
+                        
+                        pEpid = (u16 *) pMsg->pBuf;
+                        if (NULL != pEpid)
+                        {
+                            g_stMyEpInfo.ucEpId = *pEpid;
+
+                            UCORE_DEBUG_PRINT("Change epid to:%d.\r\n", g_stMyEpInfo.ucEpId);
+                        }
                     }
                     break;
                 case UCORE_MESSAGE_TYPE_TEST1:
                     {
-                        printf("Message testing 1.\r\n");
+                        UCORE_DEBUG_PRINT("Message testing 1.\r\n");
                     }
                     break;
                 case UCORE_MESSAGE_TYPE_TEST2:
                     {
-                        printf("Message testing 2.\r\n");
+                        UCORE_DEBUG_PRINT("Message testing 2.\r\n");
                     }
                     break;                    
                 default:
-                    printf("Unknown message type:%d\r\n", pMsg->usMsgType);
+                    UCORE_DEBUG_PRINT("Unknown message type:%d\r\n", pMsg->usMsgType);
                     break;
             }
 
@@ -285,11 +366,6 @@ void UCore_EventLoop(void)
             UCORE_DEL_MESSAGE(pMsg);
         }
     }
-}
-
-u8 UCore_PostMessage2(UCORE_MSG_S *pMsg)
-{
-    return OSQPost(g_QSemCoreMsg, (void *)pMsg);
 }
 
 u8 UCore_PostMessage1(u16 usMessageType, u16 usBufLen, void *pBuf)
@@ -306,6 +382,57 @@ u8 UCore_PostMessage1(u16 usMessageType, u16 usBufLen, void *pBuf)
     memset(pMsg, 0, sizeof(UCORE_MSG_S));
     pMsg->usMsgType = usMessageType;
     pMsg->usBufLen  = usBufLen;
+    pMsg->usSrcId = 0;
+    pMsg->usDstId = 0;
+    pMsg->usSequence = 0;
+    pMsg->usTransId = 0;
+    
+    if (0 != usBufLen)
+    {
+        /* check exceed max buff size? */
+        if (UCORE_MAX_MESSAGE_BUFF_LEN <= usBufLen)
+        {
+            free(pMsg);
+            return UCORE_ERR_MEM_ALLOC_FAILED;
+        }
+
+        /* alloc user buff */
+        pMsg->pBuf = malloc(usBufLen);
+
+        /* copy buff */
+        memcpy(pMsg->pBuf, pBuf, usBufLen);
+    }
+
+    /* ok, now post this message */
+    if (OS_ERR_NONE != OSQPost(g_QSemCoreMsg, (void *)pMsg))
+    {
+        /* free message */
+        if (pMsg->pBuf) free(pMsg->pBuf);
+        if (pMsg) free(pMsg);
+        return UCORE_ERR_MSG_POST_FAILED;
+    }
+
+    return UCORE_ERR_SUCCESS;
+}
+
+u8 UCore_PostMessage2(u16 usMessageType, u16 usBufLen, void *pBuf, u16 srcId, u16 dstId)
+{
+    UCORE_MSG_S *pMsg       = NULL;
+
+    /* alloc message buf */
+    pMsg = malloc(sizeof(UCORE_MSG_S));
+    if (NULL == pMsg)
+    {
+        return UCORE_ERR_MEM_ALLOC_FAILED;
+    }
+
+    memset(pMsg, 0, sizeof(UCORE_MSG_S));
+    pMsg->usMsgType = usMessageType;
+    pMsg->usBufLen  = usBufLen;
+    pMsg->usSrcId = srcId;
+    pMsg->usDstId = dstId;
+    pMsg->usSequence = 0;
+    pMsg->usTransId = 0;
 
     if (0 != usBufLen)
     {
@@ -334,4 +461,52 @@ u8 UCore_PostMessage1(u16 usMessageType, u16 usBufLen, void *pBuf)
 
     return UCORE_ERR_SUCCESS;
 }
+
+u8 UCore_PostMessage3(u16 usMessageType, u16 usBufLen, void *pBuf, u16 srcId, u16 dstId, u16 usSeq, u16 usTransId)
+{
+    UCORE_MSG_S *pMsg       = NULL;
+
+    /* alloc message buf */
+    pMsg = malloc(sizeof(UCORE_MSG_S));
+    if (NULL == pMsg)
+    {
+        return UCORE_ERR_MEM_ALLOC_FAILED;
+    }
+
+    memset(pMsg, 0, sizeof(UCORE_MSG_S));
+    pMsg->usMsgType = usMessageType;
+    pMsg->usBufLen  = usBufLen;
+    pMsg->usSrcId = srcId;
+    pMsg->usDstId = dstId;
+    pMsg->usSequence = usSeq;
+    pMsg->usTransId = usTransId;
+
+    if (0 != usBufLen)
+    {
+        /* check exceed max buff size? */
+        if (UCORE_MAX_MESSAGE_BUFF_LEN <= usBufLen)
+        {
+            free(pMsg);
+            return UCORE_ERR_MEM_ALLOC_FAILED;
+        }
+
+        /* alloc user buff */
+        pMsg->pBuf = malloc(usBufLen);
+
+        /* copy buff */
+        memcpy(pMsg->pBuf, pBuf, usBufLen);
+    }
+
+    /* ok, now post this message */
+    if (OS_ERR_NONE != OSQPost(g_QSemCoreMsg, (void *)pMsg))
+    {
+        /* free message */
+        if (pMsg->pBuf) free(pMsg->pBuf);
+        if (pMsg) free(pMsg);
+        return UCORE_ERR_MSG_POST_FAILED;
+    }
+
+    return UCORE_ERR_SUCCESS;
+}
+
 

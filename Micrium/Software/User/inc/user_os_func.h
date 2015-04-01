@@ -22,7 +22,10 @@
 /*--------------struct declare here-----------------------------*/
 
 /*--------------functions declare here-----------------------------*/
-u16 USART_Send(USART_TypeDef* USARTx, u16 usLen, void *pData);
+
+u16     USART_Send(USART_TypeDef* USARTx, u16 usLen, void *pData);
+
+void    SystemReset(void);
 
 /*---------------extern vars & functinos here-----------------------*/
 #endif
