@@ -542,12 +542,19 @@ static void OnPrint(void)
 
             break;
         }
+        case 'i':
+        {
+            UEM_DumpEpInfo();
+            
+            break;
+        }
         default:
         {
 			printf("print command:\n");
 			printf("print  -e <DEC>:<DEC>:  查看EEPROM内容, 10进制地址\n");
             printf("print  -p            :  查看设备当前PANDID\n");
             printf("print  -d            :  查看设备当前EPID\n");
+            printf("print  -i            :  查看当前已注册终端\n");
             break;
         }
     }

@@ -41,15 +41,16 @@ typedef struct _tagEPInfo
 	u8  ucEpId;
 	u8  ucEpType;
 	u16 usEpAddr;
-	u8  sEpName[MAX_EP_NAME_LEN];
 }EP_INFO_S;
 
 /*--------------functions declare here-----------------------------*/
 u8          UEM_Init(void);
-u8          UEM_AddEp(u8 ucEpId, u8 ucEpType, u16 usEpAddr, u8 *sEpName);
+u8          UEM_AddEp(u8 ucEpId, u8 ucEpType, u16 usEpAddr);
 u8          UEM_DelEp(u8 ucEpId);
-u8          UEM_UpdateEp(u8 ucEpId, u8 ucEpType, u16 usEpAddr, u8 *sEpName);
+u8          UEM_UpdateEp(u8 ucEpId, u8 ucEpType, u16 usEpAddr);
 EP_INFO_S   *UEM_FindEp(u8 ucEpId);
+
+void        UEM_DumpEpInfo(void);
 
 #if defined(__cplusplus)
 }

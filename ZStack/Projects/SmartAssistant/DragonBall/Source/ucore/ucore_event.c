@@ -56,7 +56,7 @@
 /*********************************************************************
  * Extern VARIABLES
  */
-extern endPointDesc_t SerialApp_epDesc;
+extern endPointDesc_t gEndPointDesc;
 
 /*********************************************************************
  * LOCAL FUNCTIONS
@@ -106,7 +106,7 @@ uint16 UCore_SysEventProc(void *para)
                     /* just broadcast data, maybe rough, but will be rewrite later  */
                     if ( UCORE_ERR_SUCCESS != UCORE_AF_Send(UCORE_BROADCAST_ADDR,
                                                             ZP_SA_DRAGONBALL_ENDPOINT,
-                                                            &SerialApp_epDesc, 
+                                                            &gEndPointDesc, 
                                                             ZP_SA_CLUSTER_COMMAND_REQ, 
                                                             usTotalLen, pcBuff,
                                                             AF_ACK_REQUEST, AF_DEFAULT_RADIUS) )
@@ -144,6 +144,9 @@ uint16 UCore_SysEventProc(void *para)
             } 
             
 #if !defined(ZDO_COORDINATOR)   /* 非协调器类还应启动注册 */
+        /* set regist status */
+        UCORE_SetRegistStatus(UCORE_REGIST_UNREGISTED);
+
         /* start to regist */
         osal_start_timerEx( UCORE_GetTaskID(), UCORE_APP_EVENT_ID_REGIST, UCORE_APP_EVENT_DELAY_REGIST ); 
 #endif
@@ -236,7 +239,7 @@ uint16  UCore_RegistEventProc(void *para)
     /* send to coordinator to regist */
     if ( UCORE_ERR_SUCCESS == UCORE_AF_Send(0, /* 0 is coordinator */
                                             ZP_SA_DRAGONBALL_ENDPOINT,
-                                            &SerialApp_epDesc, 
+                                            &gEndPointDesc, 
                                             ZP_SA_CLUSTER_CONNECT_REQ, 
                                             usTotalLen, pcEmOut,
                                             AF_ACK_REQUEST, AF_DEFAULT_RADIUS) )                                            

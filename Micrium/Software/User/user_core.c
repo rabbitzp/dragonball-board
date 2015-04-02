@@ -184,7 +184,7 @@ void UCore_EventLoop(void)
                             /* yes, i'm ready! */                        
                             memcpy(&g_stMyEpInfo, pEpInfo, sizeof(EP_INFO_S));
 
-                            UCORE_DEBUG_PRINT("My ep info:id:%d type:%d addr:%x name:%s\r\n", g_stMyEpInfo.ucEpId, g_stMyEpInfo.ucEpType, g_stMyEpInfo.usEpAddr, g_stMyEpInfo.sEpName);
+                            UCORE_DEBUG_PRINT("My ep info:id:%d type:%d addr:%x\r\n", g_stMyEpInfo.ucEpId, g_stMyEpInfo.ucEpType, g_stMyEpInfo.usEpAddr);
                         }
                     }
                     break;
@@ -237,26 +237,26 @@ void UCore_EventLoop(void)
                             if (NULL != UEM_FindEp(pEpInfo->ucEpId))
                             {
                                 /* so update ep info */
-                                ucResult = UEM_UpdateEp(pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
+                                ucResult = UEM_UpdateEp(pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr);
                                 if (UCORE_ERR_SUCCESS != ucResult)
                                 {
                                     UCORE_DEBUG_PRINT("Update ep[%d] failed.\r\n", pEpInfo->ucEpId);
                                     break;
                                 }
                                 
-                                UCORE_DEBUG_PRINT("Update EP[%d] info, type:%d, addr:%02X, name:%s.\r\n", pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
+                                UCORE_DEBUG_PRINT("Update EP[%d] info, type:%d, addr:%02X.\r\n", pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr);
                             }
                             else/* add new ep */
                             {
                                 /* add to ep list */
-                                ucResult = UEM_AddEp(pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
+                                ucResult = UEM_AddEp(pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr);
                                 if (UCORE_ERR_SUCCESS != ucResult)
                                 {
                                     UCORE_DEBUG_PRINT("Add ep[%d] failed.\r\n", pEpInfo->ucEpId);
                                     break;
                                 }
                                 
-                                UCORE_DEBUG_PRINT("New EP[%d] online, type:%d, addr:%02X, name:%s.\r\n", pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr, pEpInfo->sEpName);
+                                UCORE_DEBUG_PRINT("New EP[%d] online, type:%d, addr:%02X.\r\n", pEpInfo->ucEpId, pEpInfo->ucEpType, pEpInfo->usEpAddr);
                             }
                         }
                     }

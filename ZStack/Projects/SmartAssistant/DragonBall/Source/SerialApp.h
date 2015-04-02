@@ -61,7 +61,7 @@ extern "C"
 /*********************************************************************
  * GLOBAL VARIABLES
  */
-extern byte SerialApp_TaskID;
+extern byte gAppTaskID;
 
 /*********************************************************************
  * FUNCTIONS

@@ -166,14 +166,7 @@ void UUart_TaskProcessProc(void *p_arg)
                                         /* asign values */
                                     	pEpInfo->ucEpId     = pPayload->ucEpId;
                                         pEpInfo->ucEpType   = pPayload->ucEpType;
-                                        pEpInfo->usEpAddr   = pPayload->usEpAddr;    
-
-                                        if (EP_TYPE_EP == pEpInfo->ucEpType)
-                                            strncpy((char *) pEpInfo->sEpName, "EP", MAX_EP_NAME_LEN - 1);
-                                        else if (EP_TYPE_ROUTER == pEpInfo->ucEpType)
-                                            strncpy((char *) pEpInfo->sEpName, "Router", MAX_EP_NAME_LEN - 1);
-                                        else
-                                            strncpy((char *) pEpInfo->sEpName, "Coord", MAX_EP_NAME_LEN - 1);
+                                        pEpInfo->usEpAddr   = pPayload->usEpAddr;
 
                                         /* ok, finnally send a message to core */
                                         ucResult = UCore_PostMessage1(UCORE_MESSAGE_TYPE_QUERY_EPINFO, sizeof(EP_INFO_S), (void *)pEpInfo);
@@ -230,16 +223,9 @@ void UUart_TaskProcessProc(void *p_arg)
                                         memset(pEpInfo, 0, sizeof(EP_INFO_S));
 
                                         /* asign values */
-                                    	pEpInfo->ucEpId     = pHeader->ucEpId;
+                                    	pEpInfo->ucEpId     = pPayload->ucEpId;
                                         pEpInfo->ucEpType   = pPayload->ucEpType;
                                         pEpInfo->usEpAddr   = pPayload->usEpAddr;    
-
-                                        if (EP_TYPE_EP == pEpInfo->ucEpType)
-                                            strncpy((char *) pEpInfo->sEpName, "EP", MAX_EP_NAME_LEN - 1);
-                                        else if (EP_TYPE_ROUTER == pEpInfo->ucEpType)
-                                            strncpy((char *) pEpInfo->sEpName, "Router", MAX_EP_NAME_LEN - 1);
-                                        else
-                                            strncpy((char *) pEpInfo->sEpName, "Coord", MAX_EP_NAME_LEN - 1);
 
                                         /* ok, finnally send a message to core */
                                         ucResult = UCore_PostMessage1(UCORE_MESSAGE_TYPE_EP_ONLINE, sizeof(EP_INFO_S), (void *)pEpInfo);

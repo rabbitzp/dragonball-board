@@ -60,7 +60,7 @@
 /*********************************************************************
  * Extern VARIABLES
  */
-extern endPointDesc_t SerialApp_epDesc;
+extern endPointDesc_t gEndPointDesc;
 
 
 static uint8 gSerialTxBuf[SERIAL_APP_TX_MAX_BUF_LEN + 1];   /* uart recv buff, and send to coordi */
@@ -139,7 +139,7 @@ void UCore_SerialCallBack(uint8 port, uint8 event)
                                 /* just broadcast data, maybe rough, but will be rewrite later  */
                                 if ( UCORE_ERR_SUCCESS != UCORE_AF_Send(UCORE_BROADCAST_ADDR,
                                                                         ZP_SA_DRAGONBALL_ENDPOINT,
-                                                                        &SerialApp_epDesc, 
+                                                                        &gEndPointDesc, 
                                                                         ZP_SA_CLUSTER_COMMAND_REQ, 
                                                                         usTotalLen, pcBuff,
                                                                         AF_ACK_REQUEST, AF_DEFAULT_RADIUS) )
@@ -291,7 +291,7 @@ void UCore_SerialCallBack(uint8 port, uint8 event)
                                 /* send data, otherwise start a timer to retrans*/
                                 if ( UCORE_ERR_SUCCESS != UCORE_AF_Send(*pEpAddr,
                                                                         ZP_SA_DRAGONBALL_ENDPOINT, 
-                                                                        &SerialApp_epDesc, 
+                                                                        &gEndPointDesc, 
                                                                         ZP_SA_CLUSTER_COMMAND_REQ, 
                                                                         usTotalLen, pcBuff,
                                                                         AF_ACK_REQUEST, AF_DEFAULT_RADIUS) )                                                                        
@@ -322,7 +322,7 @@ void UCore_SerialCallBack(uint8 port, uint8 event)
                                 /* just broadcast data, maybe rough, but will be rewrite later  */
                                 if ( UCORE_ERR_SUCCESS != UCORE_AF_Send(UCORE_BROADCAST_ADDR,
                                                                         ZP_SA_DRAGONBALL_ENDPOINT,
-                                                                        &SerialApp_epDesc, 
+                                                                        &gEndPointDesc, 
                                                                         ZP_SA_CLUSTER_COMMAND_REQ, 
                                                                         usTotalLen, pcBuff,
                                                                         AF_ACK_REQUEST, AF_DEFAULT_RADIUS) )
@@ -360,7 +360,7 @@ uint16 UCore_KeepAliveEventProc(void *para)
     
     if ( UCORE_ERR_SUCCESS != UCORE_AF_Send(0, /* send to coordinator */
                                             ZP_SA_DRAGONBALL_ENDPOINT, 
-                                            &SerialApp_epDesc, 
+                                            &gEndPointDesc, 
                                             ZP_SA_CLUSTER_KEEP_ALIVE, 
                                             sizeof(uint16), (uint8 *) &nwkAddr,
                                             AF_ACK_REQUEST, AF_DEFAULT_RADIUS) )

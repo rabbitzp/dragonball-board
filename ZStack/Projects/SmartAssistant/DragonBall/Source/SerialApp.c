@@ -92,11 +92,11 @@
 /*********************************************************************
  * LOCAL VARIABLES
  */
-uint8               SerialApp_TaskID;           // Task ID for internal task/event processing.
+uint8               gAppTaskID;           // Task ID for internal task/event processing.
 
 
 // This list should be filled with Application specific Cluster IDs.
-const cId_t SerialApp_ClusterList[ZP_SA_MAX_CLUSTERS] =
+const cId_t gClusterList[ZP_SA_MAX_CLUSTERS] =
 {
   ZP_SA_CLUSTER_ID_GEN_BASIC,
   ZP_SA_CLUSTER_CONNECT_REQ,            
@@ -106,24 +106,24 @@ const cId_t SerialApp_ClusterList[ZP_SA_MAX_CLUSTERS] =
   ZP_SA_CLUSTER_KEEP_ALIVE
 };
 
-const SimpleDescriptionFormat_t SerialApp_SimpleDesc =
+const SimpleDescriptionFormat_t gSimpleDesc =
 {
-  ZP_SA_DRAGONBALL_ENDPOINT,          //  int   Endpoint;
+  ZP_SA_DRAGONBALL_ENDPOINT,            //  int   Endpoint;
   ZP_SA_PROFILE_ID,                     //  uint16 AppProfId[2];
   ZP_SA_DEVICEID_DRAGONBALL,            //  int   device id;
   ZP_DEVICE_APP_VERSION,                //  int   AppDevVer:4;
   ZP_DEVICE_APP_FLAGS,                  //  int   AppFlags:4;
   ZP_SA_MAX_CLUSTERS,                   //  byte  AppNumInClusters;
-  (cId_t *)SerialApp_ClusterList,       //  byte *pAppInClusterList;
+  (cId_t *)gClusterList,                //  byte *pAppInClusterList;
   ZP_SA_MAX_CLUSTERS,                   //  byte  AppNumOutClusters;
-  (cId_t *)SerialApp_ClusterList        //  byte *pAppOutClusterList;
+  (cId_t *)gClusterList                 //  byte *pAppOutClusterList;
 };
 
-endPointDesc_t SerialApp_epDesc =
+endPointDesc_t gEndPointDesc =
 {
   ZP_SA_DRAGONBALL_ENDPOINT,          //  int   Endpoint;
-  &SerialApp_TaskID,
-  (SimpleDescriptionFormat_t *)&SerialApp_SimpleDesc,
+  &gAppTaskID,
+  (SimpleDescriptionFormat_t *)&gSimpleDesc,
   noLatencyReqs
 };
 
@@ -145,9 +145,9 @@ void SerialApp_Init( uint8 task_id )
 {
     halUARTCfg_t uartConfig;
 
-    SerialApp_TaskID = task_id;
+    gAppTaskID = task_id;
 
-    afRegister( (endPointDesc_t *)&SerialApp_epDesc );
+    afRegister( (endPointDesc_t *)&gEndPointDesc );
 
     RegisterForKeys( task_id );
 
@@ -162,15 +162,15 @@ void SerialApp_Init( uint8 task_id )
     uartConfig.callBackFunc         = UCore_SerialCallBack;
     HalUARTOpen (UCORE_EX_COMM_UART_PORT, &uartConfig);
 
-    ZDO_RegisterForZDOMsg( SerialApp_TaskID, End_Device_Bind_rsp );
-    ZDO_RegisterForZDOMsg( SerialApp_TaskID, Match_Desc_rsp );
+    ZDO_RegisterForZDOMsg( gAppTaskID, End_Device_Bind_rsp );
+    ZDO_RegisterForZDOMsg( gAppTaskID, Match_Desc_rsp );
   
     /* init user core */
-    UCORE_Init(SerialApp_TaskID);
+    UCORE_Init(gAppTaskID);
 
 #if !ZDO_COORDINATOR    /* only allow endpoint and router keep alive from coordinator */
     /* start a keep alive timer */
-    osal_start_timerEx( SerialApp_TaskID, UCORE_APP_EVENT_ID_KEEP_ALIVE, UCORE_APP_EVENT_KEEPALIVE_TIME );
+    osal_start_timerEx( gAppTaskID, UCORE_APP_EVENT_ID_KEEP_ALIVE, UCORE_APP_EVENT_KEEPALIVE_TIME );
 #endif
 
 }
@@ -195,7 +195,7 @@ UINT16 SerialApp_ProcessEvent( uint8 task_id, UINT16 events )
         if (events & gCoreEventProcessor[i].usEventId)
         {        
             /* call event processor */
-            if (UCORE_ERR_SUCCESS != gCoreEventProcessor[i].fEvProcessor((void *) &SerialApp_TaskID))
+            if (UCORE_ERR_SUCCESS != gCoreEventProcessor[i].fEvProcessor((void *) &gAppTaskID))
             {
                 /* oops */
             }

@@ -77,7 +77,9 @@ typedef enum _tagUCErrCode
 	UCORE_ERR_PAPA_ERROR					= 5,
 	UCORE_ERR_INVALID_MESSAGE				= 6,
 	UCORE_ERR_NO_MESSAGE                    = 7,
-	
+    UCORE_RESULT_INVALID_EPDEV              = 8,
+    UCORE_RESULT_DUMP_EPDEV                 = 9,
+    
     /* for zstack using 100 - 150 */
     UCORE_RESULT_OTA_DUP_MSG                = 100,
     UCORE_RESULT_OTA_SER_BUSY               = 101,

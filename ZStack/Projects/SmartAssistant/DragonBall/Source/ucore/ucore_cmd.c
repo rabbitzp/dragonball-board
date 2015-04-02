@@ -59,7 +59,7 @@ uint8               gucMaxEpid  = 0;
 /*********************************************************************
  * Extern VARIABLES
  */
-extern endPointDesc_t SerialApp_epDesc;
+extern endPointDesc_t gEndPointDesc;
 
 /*********************************************************************
  * LOCAL FUNCTIONS
@@ -116,7 +116,7 @@ void UCORE_ProcessMSGCmd( afIncomingMSGPacket_t *pkt )
             /* here we just send back message */
             if ( UCORE_ERR_SUCCESS != UCORE_AF_Send(pkt->srcAddr.addr.shortAddr, 
                                                     ZP_SA_DRAGONBALL_ENDPOINT,
-                                                    &SerialApp_epDesc, 
+                                                    &gEndPointDesc, 
                                                     ZP_SA_CLUSTER_KEEP_ALIVE, 
                                                     pkt->cmd.DataLength, pkt->cmd.Data,
                                                     AF_ACK_REQUEST, AF_DEFAULT_RADIUS) )
@@ -199,7 +199,7 @@ void SerialApp_CommandReq(uint8 *pcBuf, uint16 usLen)
                     /* send to coordinator to regist */
                     if ( UCORE_ERR_SUCCESS != UCORE_AF_Send(0, /* 0 is coordinator */
                                                             ZP_SA_DRAGONBALL_ENDPOINT,
-                                                            &SerialApp_epDesc, 
+                                                            &gEndPointDesc, 
                                                             ZP_SA_CLUSTER_COMMAND_REQ, 
                                                             usTotalLen, pcEmOut,
                                                             AF_ACK_REQUEST, AF_DEFAULT_RADIUS) )
@@ -218,6 +218,32 @@ void SerialApp_CommandReq(uint8 *pcBuf, uint16 usLen)
         }
         case EEM_COMMAND_REPORT_EP:
         {
+            EEM_HEADER_S *pHdr = NULL;
+            
+            /* 所有设备都向总控器声明是自己上线 */
+        	pHdr = EEM_CreateHeader(UCORE_GetEpId(), EEM_COMMAND_COOR_STATCHAG, UCORE_ERR_SUCCESS);
+        	if (NULL != pHdr)
+        	{
+            	ucResult = EEM_AppendPayload(&pHdr, EEM_PAYLOAD_TYPE_COORD_NWK_ID, sizeof(u16), (void *) &(_NIB.nwkPanId));
+                if (UCORE_ERR_SUCCESS != ucResult)
+                {
+                    /* clean buffer */
+                    EEM_Delete((void **) &pHdr);
+                    break;
+                }
+
+                /* get buffer and send */
+        		pcEmOutBuff = EEM_GetBuff(pHdr, &usTotalLen);
+                if (NULL != pcEmOutBuff)
+                {
+                    /* send to uart */
+                    HalUARTWrite(0, (uint8 *) pcEmOutBuff, usTotalLen);
+                }
+                
+                /* clean buffer */
+                EEM_Delete((void **) &pHdr);
+            } 
+            
             /* start to regist */
             osal_start_timerEx( UCORE_GetTaskID(), UCORE_APP_EVENT_ID_REGIST, UCORE_APP_EVENT_DELAY_REGIST );
             break;
@@ -338,108 +364,58 @@ void SerialApp_ConnectReqProcess(uint8 *pcBuf, uint16 usLen)
     ucAsignEpId     = pstRegistInfo->ucEpid;
     ucAsignEpType   = pstRegistInfo->ucEpType;
 
-    /* first read max asigned epid from nv */
-    ucRet = osal_nv_item_init(UCORE_NV_CONFIG_ITEM_MAX_EP_ID, sizeof(UCORE_NV_ITEM_MAX_EPID_S), (void *) &stNvMaxEpid);
-    if ((SUCCESS == ucRet) || (NV_ITEM_UNINIT == ucRet))
+    /* create response message here */
+    if (UCORE_INVALID_EPID == ucAsignEpId)
     {
-        ucRet = osal_nv_read(UCORE_NV_CONFIG_ITEM_MAX_EP_ID, 0, sizeof(UCORE_NV_ITEM_MAX_EPID_S), (void *) &stNvMaxEpid);
-        if (ZSUCCESS != ucRet)
-        {
-            UCORE_Debug("read nv fail,ret:%d\r\n", ucRet);
-                            
-            ucAsignEpId = ++gucMaxEpid;
-        }
-        else
-        {
-            /* here asign epid, if ep regist whih 0xFF epid, then....*/
-            if (0xFF == ucAsignEpId)
-            {
-                if (0xFF <= stNvMaxEpid.ucEpid )
-                {
-                    /* need init max id value */
-                    stNvMaxEpid.ucEpid = 0;
-                    ucRet= osal_nv_write(UCORE_NV_CONFIG_ITEM_MAX_EP_ID, 0, sizeof(UCORE_NV_ITEM_MAX_EPID_S), (void *) &stNvMaxEpid);
-                    if (ZSUCCESS != ucRet)
-                    {
-                        UCORE_Debug("init max epid fail,ret:%d\r\n", ucRet);
-                    }
-                    
-                    UCORE_Debug("max epid init again\r\n");
-                }
-                else
-                {                    
-                    /* normal condition, two will equal */
-                    if (gucMaxEpid == stNvMaxEpid.ucEpid)
-                    {
-                        gucMaxEpid = ++stNvMaxEpid.ucEpid;
-                    }
-                    else
-                    {
-                        stNvMaxEpid.ucEpid = ++gucMaxEpid;
-                    }
-
-                    /* change epid for ep */
-                    ucAsignEpId = gucMaxEpid;
-                    
-                    /* write back max epid for next ep device */
-                    ucRet= osal_nv_write(UCORE_NV_CONFIG_ITEM_MAX_EP_ID, 0, sizeof(UCORE_NV_ITEM_MAX_EPID_S), (void *) &stNvMaxEpid);
-                    if (ZSUCCESS != ucRet)
-                    {
-                        UCORE_Debug("write max epid failed\r\n");
-                    }
-                }
-            }
-        }     
-    }  
+        pRspHeader = EEM_CreateRespHeader(pHeader, UCORE_RESULT_INVALID_EPDEV);    
+    }
     else
     {
-        UCORE_Debug("init nv fail,ret:%d\r\n", ucRet);
-                        
-        ucAsignEpId = ++gucMaxEpid;    
-    }
+        pRspHeader = EEM_CreateRespHeader(pHeader, UCORE_ERR_SUCCESS); 
 
-    /* create response message here */
-    pRspHeader = EEM_CreateRespHeader(pHeader, UCORE_ERR_SUCCESS);
+        /* set epid */
+        pRspHeader->ucEpId = ucAsignEpId;
+    }
 
     /* free previous buff first */
     EEM_Delete((void **) &pHeader);
 
     /* check this buffer */
-    if (NULL == pRspHeader)
+    if (NULL != pRspHeader)
+    {
+        /* get buff */
+    	pcBuff = EEM_GetBuff(pRspHeader, &usTotalLen);
+        if (NULL == pcBuff)
+        {
+            /* clean buffer */
+            EEM_Delete((void **) &pRspHeader);        
+            return;      
+        }
+        
+        if ( UCORE_ERR_SUCCESS != UCORE_AF_Send(usEpShortAddr, 
+                                                ZP_SA_DRAGONBALL_ENDPOINT,
+                                                &gEndPointDesc, 
+                                                ZP_SA_CLUSTER_CONNECT_RSP, 
+                                                usTotalLen, pcBuff,
+                                                AF_ACK_REQUEST, AF_DEFAULT_RADIUS) )
+        {
+            /* clean buffer */
+            EEM_Delete((void **) &pRspHeader); 
+            
+            // Error occurred in request to send.
+            UCORE_Debug("AF send error!\r\n");
+            return;    
+        }
+
+        /* clean buffer first */
+        EEM_Delete((void **) &pRspHeader);
+    }
+
+    /* 如果是非法设备ID，到这里就返回了 */
+    if (UCORE_INVALID_EPID == ucAsignEpId)
     {
         return;
     }
-
-    /* set epid */
-    pRspHeader->ucEpId = ucAsignEpId;
-
-    /* get buff */
-	pcBuff = EEM_GetBuff(pRspHeader, &usTotalLen);
-    if (NULL == pcBuff)
-    {
-        /* clean buffer */
-        EEM_Delete((void **) &pRspHeader);        
-        return;      
-    }
-
-    
-    if ( UCORE_ERR_SUCCESS != UCORE_AF_Send(usEpShortAddr, 
-                                            ZP_SA_DRAGONBALL_ENDPOINT,
-                                            &SerialApp_epDesc, 
-                                            ZP_SA_CLUSTER_CONNECT_RSP, 
-                                            usTotalLen, pcBuff,
-                                            AF_ACK_REQUEST, AF_DEFAULT_RADIUS) )
-    {
-        /* clean buffer */
-        EEM_Delete((void **) &pRspHeader); 
-        
-        // Error occurred in request to send.
-        UCORE_Debug("AF send error!\r\n");
-        return;    
-    }
-
-    /* clean buffer first */
-    EEM_Delete((void **) &pRspHeader);
 
     /* send ep online message main board */    
 	pHeader = EEM_CreateHeader(ucAsignEpId, EEM_COMMAND_EP_ONLINE, UCORE_ERR_SUCCESS);
@@ -490,6 +466,9 @@ void SerialApp_DeviceConnectRsp(uint8 *pcBuf, uint16 usLen)
     ucResult = EEM_GetMessage(pcBuf, (uint32 *) &usLen, &pHeader);
     if (UCORE_ERR_SUCCESS != ucResult)
     {
+        /* set a timer to regist again */
+        osal_start_timerEx( UCORE_GetTaskID(), UCORE_APP_EVENT_ID_REGIST, UCORE_APP_EVENT_DELAY_REGIST ); 
+    
         return;
     }
 

@@ -212,10 +212,10 @@ Purpose     : Valid LCD configuration and defaults
 */
 
 #ifndef LCD_MIRROR_X
-  #define LCD_MIRROR_X   (0)    /* If active:  X -> -X */
+  #define LCD_MIRROR_X   (1)    /* If active:  X -> -X */
 #endif
 #ifndef LCD_MIRROR_Y
-  #define LCD_MIRROR_Y   (0)    /* If active:  Y -> -Y */
+  #define LCD_MIRROR_Y   (1)    /* If active:  Y -> -Y */
 #endif
 #ifndef LCD_SWAP_XY
   #define LCD_SWAP_XY    (0)    /* If active:  X <-> Y */

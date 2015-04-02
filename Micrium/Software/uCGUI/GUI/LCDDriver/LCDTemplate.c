@@ -386,13 +386,16 @@ static void  DrawBitLine16BPP(int x, int y, U16 const GUI_UNI_PTR * p, int xsize
 *   that no check on the parameters needs to be performed.
 */
 void LCD_L0_SetPixelIndex(int x, int y, int PixelIndex) {
+#if LCD_SWAP_XY | LCD_MIRROR_X| LCD_MIRROR_Y
+  int xPhys, yPhys;
+#endif
   GUI_USE_PARA(x);
   GUI_USE_PARA(y);
   GUI_USE_PARA(PixelIndex);
   /* Convert logical into physical coordinates (Dep. on LCDConf.h) */
   #if LCD_SWAP_XY | LCD_MIRROR_X| LCD_MIRROR_Y
-    int xPhys = LOG2PHYS_X(x, y);
-    int yPhys = LOG2PHYS_Y(x, y);
+    xPhys = LOG2PHYS_X(x, y);
+    yPhys = LOG2PHYS_Y(x, y);
   #else
     #define xPhys x
     #define yPhys y
@@ -414,12 +417,15 @@ void LCD_L0_SetPixelIndex(int x, int y, int PixelIndex) {
 */
 unsigned int LCD_L0_GetPixelIndex(int x, int y) {
   LCD_PIXELINDEX PixelIndex;
+#if LCD_SWAP_XY | LCD_MIRROR_X| LCD_MIRROR_Y
+  int xPhys, yPhys;
+#endif
   GUI_USE_PARA(x);
   GUI_USE_PARA(y);
   /* Convert logical into physical coordinates (Dep. on LCDConf.h) */
   #if LCD_SWAP_XY | LCD_MIRROR_X| LCD_MIRROR_Y
-    int xPhys = LOG2PHYS_X(x, y);
-    int yPhys = LOG2PHYS_Y(x, y);
+    xPhys = LOG2PHYS_X(x, y);
+    yPhys = LOG2PHYS_Y(x, y);
   #else
     #define xPhys x
     #define yPhys y

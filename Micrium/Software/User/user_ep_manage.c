@@ -86,7 +86,6 @@ u8 UEM_Init(void)
     /* asign values */
 	pEp->ucEpId     = 0;/* 0 fixed for coordinator */
     pEp->ucEpType   = EP_TYPE_COOR;
-    strncpy((char *) pEp->sEpName, "COOR", MAX_EP_NAME_LEN - 1);
 
 	g_pEpDlistHead = create_double_link_node((void *) pEp);
     if (NULL == g_pEpDlistHead)
@@ -102,7 +101,7 @@ u8 UEM_Init(void)
     return UCORE_ERR_SUCCESS;
 }
 
-u8 UEM_AddEp(u8 ucEpId, u8 ucEpType, u16 usEpAddr, u8 *sEpName)
+u8 UEM_AddEp(u8 ucEpId, u8 ucEpType, u16 usEpAddr)
 {
 	EP_INFO_S *pEp = NULL;
     INT8U err;
@@ -133,9 +132,6 @@ u8 UEM_AddEp(u8 ucEpId, u8 ucEpType, u16 usEpAddr, u8 *sEpName)
 	pEp->ucEpId     = ucEpId;/* 0 fixed for coordinator */
     pEp->ucEpType   = ucEpType;
     pEp->usEpAddr   = usEpAddr;
-
-    if (NULL != sEpName)
-        strncpy((char *) pEp->sEpName, (char *) sEpName, MAX_EP_NAME_LEN - 1);
 
     /* ok, add to list */
     if (TRUE != insert_data_into_double_link(&g_pEpDlistHead, (void *) pEp, dlist_compare))
@@ -189,7 +185,7 @@ u8 UEM_DelEp(u8 ucEpId)
     return UCORE_ERR_SUCCESS;
 }
 
-u8 UEM_UpdateEp(u8 ucEpId, u8 ucEpType, u16 usEpAddr, u8 *sEpName)
+u8 UEM_UpdateEp(u8 ucEpId, u8 ucEpType, u16 usEpAddr)
 {
     EP_INFO_S *pEpFind  = NULL;
     INT8U err;
@@ -214,9 +210,6 @@ u8 UEM_UpdateEp(u8 ucEpId, u8 ucEpType, u16 usEpAddr, u8 *sEpName)
     /* ok, set new info */
     pEpFind->ucEpType = ucEpType;
     pEpFind->usEpAddr = usEpAddr;
-
-    if (NULL != sEpName)
-        strncpy((char *) pEpFind->sEpName, (char *) sEpName, MAX_EP_NAME_LEN - 1);    
 
     /* release sem */
     OSSemPost(g_QSemListGuard);
@@ -247,5 +240,29 @@ EP_INFO_S *UEM_FindEp(u8 ucEpId)
     
     /* ok, return ep info directly */
     return ((EP_INFO_S *) pNodeFind->data);
+}
+
+void print_ep_info(void *pdata)
+{
+    EP_INFO_S *pInfo = NULL;
+
+    if (NULL == pdata)
+    {
+        return;
+    }
+
+    /* cast data */
+    pInfo = (EP_INFO_S *) pdata;
+
+    /* print info */
+    printf("%d    %d    %02X\r\n", pInfo->ucEpId, pInfo->ucEpType, pInfo->usEpAddr);    
+}
+
+void UEM_DumpEpInfo(void)
+{
+    printf("===============================================\r\n");
+    printf("EPID    TYPE    ADDRESS\r\n");
+    printf("===============================================\r\n");
+    print_double_link_node(g_pEpDlistHead, print_ep_info);
 }
 

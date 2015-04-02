@@ -100,13 +100,12 @@ void GPS_EventRecvLoop(void)
         pNmeaInfo = (nmeaINFO *) OSQPend(g_QSemGPSMsgRecv, 0, &err);
         if ((OS_NO_ERR == err) && (NULL != pNmeaInfo))
         {
-            EEM_EP_GPS_INFO_S   stEemGpsInfo;
-        
-#if (DEF_ENABLED == OS_USER_LCD_SUPPORT)        
             WM_MESSAGE          stUiMessage;
-            
+        
+            /* asign epid */
             pNmeaInfo->id = g_stMyEpInfo.ucEpId;
-            
+        
+#if (DEF_ENABLED == OS_USER_LCD_SUPPORT)
             stUiMessage.MsgId  = GUI_USER_MSG_GPS_UPDATE;   
             stUiMessage.Data.p = (void *) pNmeaInfo;
 
@@ -125,6 +124,8 @@ void GPS_EventRecvLoop(void)
         	pHeader = EEM_CreateHeader(g_stMyEpInfo.ucEpId, EEM_COMMAND_REPORT_GPS_DATA, UCORE_ERR_SUCCESS);
         	if (NULL != pHeader)
         	{
+                EEM_EP_GPS_INFO_S   stEemGpsInfo = {0};
+        	
                 /* prepare struct */
             	stEemGpsInfo.epid = pNmeaInfo->id;		    /**< device id */    
             	stEemGpsInfo.status = pNmeaInfo->status;			/**< Status (A = active or V = void) */

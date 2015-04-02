@@ -81,6 +81,7 @@ static void _cbWndRadar(WM_MESSAGE* pMsg) {
         {
             float fDistance, fdisx, fdisy, fangle;
             u16   uDisPixx, uDisPixY;
+            u8    ucMyEpId = 0;
             
             GUI_SetDrawMode(GUI_DRAWMODE_NORMAL);
             GUI_SetTextMode(GUI_TM_TRANS);    
@@ -109,31 +110,25 @@ static void _cbWndRadar(WM_MESSAGE* pMsg) {
             GUI_DrawLine(0, 0, SCREEN_X_PIXEL, SCREEN_Y_PIXEL);
             GUI_DrawLine(SCREEN_X_PIXEL, 0, 0, SCREEN_Y_PIXEL);    
 
-            /* coord must be valid */
-            if ('A' != g_stArryGPSInfo[0].status)
+            ucMyEpId = g_stMyEpInfo.ucEpId;
+            
+            /* my gps must be valid */
+            if ('A' != g_stArryGPSInfo[ucMyEpId].status)
             {
                 return;
             }
 
-            /* draw coord */
-            if (g_stMyEpInfo.ucEpId == 0)
-            {
-                GUI_SetColor(GUI_RED);
-            }
-            else
-            {
-                GUI_SetColor(GUI_YELLOW);
-            }
-
+            /* 我的位置以红点表示在雷点原点，其它终端的位置以我为参考 */
+            GUI_SetColor(GUI_RED);
             GUI_FillCircle(SCREEN_ORIGIN_X_POS, SCREEN_ORIGIN_Y_POS, 3);
             
-            for (i=1; i<RADAR_MAX_SUPPORT_EP_NUM; i++)
+            for (i = 0; i < RADAR_MAX_SUPPORT_EP_NUM; i++)
             {
-                /* must be valid info */
-                if ('A' == g_stArryGPSInfo[i].status)
+                /* 跳过自身，画出其它终端与自身的参考位置 */
+                if (('A' == g_stArryGPSInfo[i].status) && (i != ucMyEpId))
                 {
                     /* cal distance */
-                    fDistance = nmea_caldistance(g_stArryGPSInfo[0].lat, g_stArryGPSInfo[0].lon, g_stArryGPSInfo[i].lat, g_stArryGPSInfo[i].lon);
+                    fDistance = nmea_caldistance(g_stArryGPSInfo[ucMyEpId].lat, g_stArryGPSInfo[ucMyEpId].lon, g_stArryGPSInfo[i].lat, g_stArryGPSInfo[i].lon);
                     fangle = g_stArryGPSInfo[i].course;
 
                     if (fangle >= 0 && fangle <= 90)
@@ -178,16 +173,16 @@ static void _cbWndRadar(WM_MESSAGE* pMsg) {
                     /* dump info */
                     //printf("ep[%d] to orgin's distance:%.5f, uDisPixx:%d uDisPixY:%d\r\n", g_stArryGPSInfo[i].id, fDistance, uDisPixx, uDisPixY);
 
-                    /* 如果是自身，则用红点表示，默认其它EP是白点 */
-                    if (g_stMyEpInfo.ucEpId == g_stArryGPSInfo[i].id)
+                    /* 如果是协调器，则用黄点表示，默认其它EP是白点 */
+                    if (i == 0)
                     {
-                        GUI_SetColor(GUI_RED);
+                        GUI_SetColor(GUI_YELLOW);
                     }
                     else
                     {
                         GUI_SetColor(GUI_WHITE);
                     }
-                    
+
                     /* draw this point */
                     GUI_FillCircle(uDisPixx, uDisPixY, 3);
                 }
@@ -224,59 +219,6 @@ static void _cbWndRadar(WM_MESSAGE* pMsg) {
 void GUI_WndRadarCreate(WM_HWIN *pCurrent)
 {
     INT8U err = 0;
-
-#if 0
-    /* for test */
-    g_stArryGPSInfo[0].course = 30;
-    g_stArryGPSInfo[0].id = 0;
-    g_stArryGPSInfo[0].lat = 30.32965;
-    g_stArryGPSInfo[0].lon = 120.13516;
-    g_stArryGPSInfo[0].status = 'A';
-    
-    /* for test */
-    g_stArryGPSInfo[1].course = 30;
-    g_stArryGPSInfo[1].id = 1;
-    g_stArryGPSInfo[1].lat = 30.3302208003;
-    g_stArryGPSInfo[1].lon = 120.1360291456;
-    g_stArryGPSInfo[1].status = 'A';
-
-    g_stArryGPSInfo[2].course = 65;
-    g_stArryGPSInfo[2].id = 2;
-    g_stArryGPSInfo[2].lat = 30.3308558003;
-    g_stArryGPSInfo[2].lon = 120.1349471456;
-    g_stArryGPSInfo[2].status = 'A';
-
-    g_stArryGPSInfo[3].course = 145;
-    g_stArryGPSInfo[3].id = 3;
-    g_stArryGPSInfo[3].lat = 30.3297958003;
-    g_stArryGPSInfo[3].lon = 120.1358041456;
-    g_stArryGPSInfo[3].status = 'A';
-
-    g_stArryGPSInfo[4].course = 256;
-    g_stArryGPSInfo[4].id = 4;
-    g_stArryGPSInfo[4].lat = 30.3304858003;
-    g_stArryGPSInfo[4].lon = 120.1367211456;
-    g_stArryGPSInfo[4].status = 'A';
-
-
-    g_stArryGPSInfo[5].course = 334;
-    g_stArryGPSInfo[5].id = 5;
-    g_stArryGPSInfo[5].lat = 30.3292548003;
-    g_stArryGPSInfo[5].lon = 120.1374211456;
-    g_stArryGPSInfo[5].status = 'A';
-
-    g_stArryGPSInfo[6].course = 258;
-    g_stArryGPSInfo[6].id = 6;
-    g_stArryGPSInfo[6].lat = 30.3295588003;
-    g_stArryGPSInfo[6].lon = 120.1361501456;
-    g_stArryGPSInfo[6].status = 'A';
-
-    g_stArryGPSInfo[7].course = 214;
-    g_stArryGPSInfo[7].id = 7;
-    g_stArryGPSInfo[7].lat = 30.3284748003;
-    g_stArryGPSInfo[7].lon = 120.1391011456;
-    g_stArryGPSInfo[7].status = 'A';   
-#endif
     
     /* Create radar wnd */
     g_hWndRadar = WM_CreateWindow( 0, 0, 220, 220, WM_CF_SHOW | WM_CF_MEMDEV, _cbWndRadar, 0);
