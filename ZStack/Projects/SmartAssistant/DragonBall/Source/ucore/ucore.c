@@ -67,6 +67,7 @@ UCORE_EVENT_PROCESSOR_S gCoreEventProcessor[UCORE_MAX_EVENT_PROCESSOR] =
     {UCORE_APP_EVENT_ID_CHANGE_PANID,       UCore_ChangePanIdEventProc},
     {UCORE_APP_EVENT_ID_REBOOT_DEVICE,      UCore_RebootEventProc},
     {UCORE_APP_EVENT_ID_KEEP_ALIVE,         UCore_KeepAliveEventProc},
+    {UCORE_APP_EVENT_ID_TEST_SPEED,         UCore_TestSpeedEventProc},    
 };
 
 /*********************************************************************

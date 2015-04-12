@@ -30,7 +30,7 @@ extern "C"
 /*********************************************************************
  * MACROS
  */
-#define UCORE_MAX_EVENT_PROCESSOR  5
+#define UCORE_MAX_EVENT_PROCESSOR  6
 
 /*********************************************************************
  * CONSTANTS
@@ -86,6 +86,8 @@ uint16          UCore_ChangePanIdEventProc(void *para);
 uint16          UCore_RebootEventProc(void *para);
 
 uint16          UCore_KeepAliveEventProc(void *para);
+
+uint16          UCore_TestSpeedEventProc(void *para);
 
 /* system call back functions */
 void            UCore_SerialCallBack(uint8 port, uint8 event);

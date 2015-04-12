@@ -21,6 +21,7 @@
 #include "ZDObject.h"
 #include "ZDProfile.h"
 #include "OSAL_NV.h"
+#include "osal_clock.h"
 #include "hal_drivers.h"
 #include "hal_uart.h"
 #include "hal_key.h"
@@ -373,6 +374,32 @@ uint16 UCore_KeepAliveEventProc(void *para)
 
     /* start a keep alive timer */
     osal_start_timerEx( UCORE_GetTaskID(), UCORE_APP_EVENT_ID_KEEP_ALIVE, UCORE_APP_EVENT_KEEPALIVE_TIME );
+
+    return UCORE_ERR_SUCCESS;
+}
+
+uint32 gTxBytesCount = 0;
+
+#pragma optimize=none
+uint16 UCore_TestSpeedEventProc(void *para)
+{    
+    if ( UCORE_ERR_SUCCESS == UCORE_AF_Send(0, /* send to coordinator */
+                                            ZP_SA_DRAGONBALL_ENDPOINT, 
+                                            &gEndPointDesc, 
+                                            ZP_SA_CLUSTER_TEST_SPEED, 
+                                            80, gSerialTxBuf,
+                                            AF_TX_OPTIONS_NONE, AF_DEFAULT_RADIUS) )
+    {
+        gTxBytesCount += 80;
+
+#if defined ( LCD_SUPPORTED )
+        sprintf(gsLCDWriteBuf, "TX:%u/s", gTxBytesCount / (uint32) osal_getClock());    
+        HalLcdWriteString(gsLCDWriteBuf, HAL_LCD_LINE_4 );
+#endif
+    }
+
+    /* start again */
+    osal_start_timerEx( UCORE_GetTaskID(), UCORE_APP_EVENT_ID_TEST_SPEED, UCORE_APP_EVENT_TEST_SPEED_SEND_INTER_TIME ); 
 
     return UCORE_ERR_SUCCESS;
 }

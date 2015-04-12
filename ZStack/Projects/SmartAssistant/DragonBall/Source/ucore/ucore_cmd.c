@@ -21,6 +21,7 @@
 #include "ZDObject.h"
 #include "ZDProfile.h"
 #include "OSAL_NV.h"
+#include "osal_clock.h"
 #include "hal_drivers.h"
 #include "hal_uart.h"
 #include "hal_key.h"
@@ -53,7 +54,8 @@
  * LOCAL VARIABLES
  */
 #ifdef ZDO_COORDINATOR
-uint8               gucMaxEpid  = 0;
+uint8               gucMaxEpid          = 0;
+uint32              gTestSpeedRxBytes   = 0;
 #endif
 
 /*********************************************************************
@@ -128,6 +130,19 @@ void UCORE_ProcessMSGCmd( afIncomingMSGPacket_t *pkt )
 #endif                       
             break;            
         }
+        case ZP_SA_CLUSTER_TEST_SPEED:
+        {
+#if defined(ZDO_COORDINATOR)    /* coordinator send ack, and other devices clear reset counter */
+            gTestSpeedRxBytes += pkt->cmd.DataLength;
+
+ #if defined ( LCD_SUPPORTED )
+            sprintf(gsLCDWriteBuf, "RX:%u/s", gTestSpeedRxBytes / (uint32) osal_getClock());    
+            HalLcdWriteString(gsLCDWriteBuf, HAL_LCD_LINE_4 );
+#endif
+
+#endif
+            break;            
+        }        
         default:
         {
             break;

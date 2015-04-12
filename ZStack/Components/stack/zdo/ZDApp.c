@@ -643,6 +643,15 @@ uint8 ZDOInitDevice( uint16 startDelay )
     // clear NWK key values
     ZDSecMgrClearNVKeyValues();
   }
+
+  /* This is very important, when we set a new panid, also need to modify zgConfigPANID,
+   * or it will failed to join network when lost father node, especially you defined NV_RESTORE,
+   * when network restore failed, it can be used to rejoin another node:)
+  */
+  if (zgConfigPANID != _NIB.nwkPanId)
+  {
+    zgConfigPANID = _NIB.nwkPanId;
+  }  
 #endif
 
   if ( networkStateNV == ZDO_INITDEV_NEW_NETWORK_STATE )

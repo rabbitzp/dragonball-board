@@ -52,6 +52,9 @@ extern "C"
 /* keep alive event */
 #define UCORE_APP_EVENT_ID_KEEP_ALIVE               0x0020
 
+/* speed test event */
+#define UCORE_APP_EVENT_ID_TEST_SPEED               0x0040
+
 /* regist timer delay(1000ms) */
 #define UCORE_APP_EVENT_DELAY_REGIST                5000
 
@@ -60,6 +63,9 @@ extern "C"
 
 /* keep alive from coordinator in 5 seconds */
 #define UCORE_APP_EVENT_KEEPALIVE_TIME              5000
+
+/* speed test packet send time val */
+#define UCORE_APP_EVENT_TEST_SPEED_SEND_INTER_TIME  20
 
 /* Exported types ------------------------------------------------------------*/
 typedef unsigned long  u32;

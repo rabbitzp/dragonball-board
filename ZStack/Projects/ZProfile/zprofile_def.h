@@ -48,7 +48,7 @@ extern "C"
 #define ZP_SA_DRAGONBALL_ENDPOINT               10
 
 /* Device clusters */
-#define ZP_SA_MAX_CLUSTERS                      6
+#define ZP_SA_MAX_CLUSTERS                      7
 
 #define ZP_SA_CLUSTER_ID_GEN_BASIC              1
 #define ZP_SA_CLUSTER_CONNECT_REQ               2  
@@ -56,6 +56,7 @@ extern "C"
 #define ZP_SA_CLUSTER_COMMAND_REQ               4    
 #define ZP_SA_CLUSTER_COMMAND_RSP               5  
 #define ZP_SA_CLUSTER_KEEP_ALIVE                6
+#define ZP_SA_CLUSTER_TEST_SPEED                7
 
 #ifdef __cplusplus
 }

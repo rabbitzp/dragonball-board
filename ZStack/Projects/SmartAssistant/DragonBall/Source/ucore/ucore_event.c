@@ -149,6 +149,9 @@ uint16 UCore_SysEventProc(void *para)
 
         /* start to regist */
         osal_start_timerEx( UCORE_GetTaskID(), UCORE_APP_EVENT_ID_REGIST, UCORE_APP_EVENT_DELAY_REGIST ); 
+
+        /* start test speed */
+        osal_start_timerEx( UCORE_GetTaskID(), UCORE_APP_EVENT_ID_TEST_SPEED, UCORE_APP_EVENT_TEST_SPEED_SEND_INTER_TIME );        
 #endif
         }
         else

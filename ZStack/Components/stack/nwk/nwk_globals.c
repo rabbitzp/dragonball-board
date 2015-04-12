@@ -548,6 +548,28 @@ void nwk_Status( uint16 statusCode, uint16 statusValue )
       break;
   }
 #endif
+
+#if defined ( NV_RESTORE )
+#include "ZDSecMgr.h"
+    if (NWK_ERROR_ASSOC_CNF_DENIED == statusCode)
+    {
+        uint16 uspanid = _NIB.nwkPanId;
+        
+        // Wipe out the network state in NV
+        NLME_InitNV();
+        NLME_SetDefaultNV();    
+        // clear NWK key values
+        ZDSecMgrClearNVKeyValues();
+        
+        /* then change self pandid */
+        _NIB.nwkPanId = uspanid;
+        /* update */
+        NLME_UpdateNV(NWK_NV_NIB_ENABLE);
+
+        /* then try do ZDOInitDevice( 0 ) again */
+        ZDOInitDevice( 0 );
+    }
+#endif
 }
 
 /*********************************************************************
